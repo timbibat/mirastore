@@ -15,7 +15,6 @@ export default function AddItem({ route, navigation }: any) {
   const [imageUri, setImageUri] = useState<string | null>(editingProduct?.imageUrl || null);
   const [form, setForm] = useState({
     name: editingProduct?.name || '',
-    sku: editingProduct?.sku || '',
     price: editingProduct?.price.toString() || '',
     stock: editingProduct?.stock.toString() || '',
     unit: editingProduct?.unit || 'sachets',
@@ -37,7 +36,7 @@ export default function AddItem({ route, navigation }: any) {
   };
 
   const handleSave = async () => {
-    if (!form.name || !form.sku || !form.price || !form.stock) {
+    if (!form.name || !form.price || !form.stock) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
@@ -46,7 +45,6 @@ export default function AddItem({ route, navigation }: any) {
     try {
       const productData: any = {
         name: form.name,
-        sku: form.sku,
         price: parseFloat(form.price),
         stock: parseInt(form.stock),
         unit: form.unit,
@@ -101,16 +99,6 @@ export default function AddItem({ route, navigation }: any) {
               placeholder="e.g. Kopiko Black"
               value={form.name}
               onChangeText={(v) => setForm({ ...form, name: v })}
-            />
-          </View>
-
-          <View style={tw`mb-4`}>
-            <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>SKU *</Text>
-            <TextInput
-              style={tw`bg-white border border-slate-200 rounded-lg p-3 text-base text-indigo-950`}
-              placeholder="e.g. KP-BLK-01"
-              value={form.sku}
-              onChangeText={(v) => setForm({ ...form, sku: v })}
             />
           </View>
 

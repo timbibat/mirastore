@@ -72,6 +72,8 @@ export default function Dashboard({ navigation, onLogout }: any) {
     if (value === 'C') {
       setCalcExpression('');
       setCalcResult('0');
+    } else if (value === '⌫') {
+      setCalcExpression(prev => prev.slice(0, -1));
     } else if (value === '=') {
       try {
         const result = eval(calcExpression.replace(/×/g, '*').replace(/÷/g, '/'));
@@ -118,9 +120,23 @@ export default function Dashboard({ navigation, onLogout }: any) {
   });
   const todayEarnings = todaySales.reduce((sum, sale) => sum + sale.totalAmount, 0);
 
-  const barData = sales.length > 0 
-    ? sales.slice(0, 8).reverse().map(s => (s.totalAmount / 100) * 10) 
-    : [30, 50, 40, 60, 55, 75, 70, 100];
+  // Group sales by date for the last 8 days
+  const last8Days = [...Array(8)].map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return d.toDateString();
+  }).reverse();
+
+  const dailyTotals = last8Days.map(dateStr => {
+    const daySales = sales.filter(s => {
+      const saleDate = s.timestamp?.toDate ? s.timestamp.toDate() : new Date(s.timestamp);
+      return saleDate.toDateString() === dateStr;
+    });
+    return daySales.reduce((sum, s) => sum + s.totalAmount, 0);
+  });
+
+  const maxDailySale = Math.max(...dailyTotals, 100);
+  const barData = dailyTotals.map(total => (total / maxDailySale) * 60 + 5); // Base height of 5px
 
   if (loading) {
     return (
@@ -338,21 +354,21 @@ export default function Dashboard({ navigation, onLogout }: any) {
             </View>
             
             <View style={tw`flex-row flex-wrap justify-between`}>
-              {['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', '0', '.', 'C', '+', '='].map((btn) => (
+              {['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', '.', '0', '⌫', '+', 'C', '='].map((btn) => (
                 <TouchableOpacity 
                   key={btn} 
                   style={[
                     tw`w-[23%] aspect-[1.1] bg-white rounded-xl justify-center items-center mb-2 border border-slate-200`,
-                    btn === '=' ? tw`w-full aspect-[5] mt-1 bg-violet-600 border-violet-600` : null,
+                    btn === '=' ? tw`w-[74%] aspect-[2.3] bg-violet-600 border-violet-600` : null,
                     ['÷', '×', '-', '+'].includes(btn) ? tw`bg-violet-800 border-violet-800` : null,
-                    btn === 'C' ? tw`bg-red-100 border-red-100` : null
+                    ['C', '⌫'].includes(btn) ? tw`bg-red-50 border-red-100` : null
                   ]}
                   onPress={() => handleCalcInput(btn)}
                 >
                   <Text style={[
                     tw`text-xl font-bold text-indigo-950`,
                     ['÷', '×', '-', '+', '='].includes(btn) ? tw`text-white` : null,
-                    btn === 'C' ? tw`text-red-500` : null
+                    ['C', '⌫'].includes(btn) ? tw`text-red-500` : null
                   ]}>{btn}</Text>
                 </TouchableOpacity>
               ))}

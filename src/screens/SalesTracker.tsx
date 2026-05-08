@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions, Image, Alert, Platform } from 'react-native';
 import tw from 'twrnc';
 import { colors } from '../theme/colors';
 import { Card } from '../components/Card';
-import { TrendingUp, Receipt, Package } from 'lucide-react-native';
+import { TrendingUp, Receipt, Package, Trash2 } from 'lucide-react-native';
 import { salesService, Sale } from '../services/salesService';
 
 export default function SalesTracker({ navigation }: any) {
@@ -20,6 +20,36 @@ export default function SalesTracker({ navigation }: any) {
       console.error('Error fetching sales:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteSale = (sale: Sale) => {
+    const confirmDelete = async () => {
+      try {
+        setLoading(true);
+        await salesService.deleteSale(sale);
+        await fetchSales(); // Refresh data
+      } catch (error) {
+        console.error('Error deleting sale:', error);
+        Alert.alert('Error', 'Failed to delete transaction.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (confirm(`Delete transaction for ${sale.items[0].productName}? This will restock the items.`)) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        "Delete Transaction",
+        `Are you sure you want to delete this transaction? Items will be returned to stock.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", onPress: confirmDelete, style: "destructive" }
+        ]
+      );
     }
   };
 
@@ -75,7 +105,12 @@ export default function SalesTracker({ navigation }: any) {
             </Text>
             <Text style={tw`text-xs text-slate-500`}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {date.toLocaleDateString()}</Text>
           </View>
-          <Text style={tw`text-base font-extrabold text-indigo-950`}>₱{item.totalAmount.toFixed(2)}</Text>
+          <View style={tw`items-end mr-3`}>
+            <Text style={tw`text-base font-extrabold text-indigo-950`}>₱{item.totalAmount.toFixed(2)}</Text>
+          </View>
+          <TouchableOpacity onPress={() => handleDeleteSale(item)} style={tw`p-2 bg-red-50 rounded-lg`}>
+            <Trash2 color={colors.error} size={18} />
+          </TouchableOpacity>
         </View>
         <View style={tw`mt-3 pt-3 border-t border-slate-50`}>
           {item.items.map((prod, idx) => (

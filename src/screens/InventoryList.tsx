@@ -103,7 +103,6 @@ export default function InventoryList({ navigation }: any) {
             )}
           </View>
           <View style={tw`flex-1 ml-4`}>
-            <Text style={tw`text-[11px] text-slate-500 font-semibold uppercase`}>SKU: {item.sku}</Text>
             <Text style={tw`text-lg font-bold text-indigo-950 mt-0.5`}>{item.name}</Text>
             <View style={tw`flex-row mt-2`}>
               {item.isFastMoving && (
@@ -163,8 +162,7 @@ export default function InventoryList({ navigation }: any) {
   }
 
   const filteredProducts = products.filter(i => 
-    i.name.toLowerCase().includes(search.toLowerCase()) || 
-    i.sku.toLowerCase().includes(search.toLowerCase())
+    i.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (

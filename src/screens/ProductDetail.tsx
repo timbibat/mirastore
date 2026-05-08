@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, useWindowDimensions, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, useWindowDimensions, Alert, TouchableOpacity, Platform } from 'react-native';
 import tw from 'twrnc';
 import { colors } from '../theme/colors';
 import { Button } from '../components/Button';
@@ -23,8 +23,8 @@ export default function ProductDetail({ route, navigation }: any) {
         });
     };
 
-    if (width > 768) { // Web detection
-      if (window.confirm(`Are you sure you want to delete ${product.name}?`)) {
+    if (Platform.OS === 'web') {
+      if (confirm(`Are you sure you want to delete ${product.name}?`)) {
         confirmDelete();
       }
     } else {
@@ -69,7 +69,6 @@ export default function ProductDetail({ route, navigation }: any) {
         </View>
 
         <View style={tw`p-4 bg-white mt-2`}>
-          <Text style={tw`text-xs text-slate-500 uppercase tracking-widest font-semibold mb-1`}>{product.sku}</Text>
           <Text style={tw`text-2xl font-extrabold text-indigo-950 mb-1`}>{product.name}</Text>
           <Text style={tw`text-2xl font-bold text-violet-600 mb-6`}>₱{product.price}</Text>
 

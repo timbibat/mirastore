@@ -5,7 +5,6 @@ import { db, storage } from './firebase';
 export interface Product {
   id?: string;
   name: string;
-  sku: string;
   price: number;
   stock: number;
   unit: string;
@@ -36,7 +35,7 @@ export const productService = {
     if (imageUri) {
       const response = await fetch(imageUri);
       const blob = await response.blob();
-      const storageRef = ref(storage, `products/${product.sku}_${Date.now()}`);
+      const storageRef = ref(storage, `products/${product.name}_${Date.now()}`);
       await uploadBytes(storageRef, blob);
       imageUrl = await getDownloadURL(storageRef);
     }

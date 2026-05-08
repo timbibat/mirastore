@@ -17,7 +17,10 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     setError('');
     
     setTimeout(() => {
-      if (email === 'mira@store.com' && password === 'admin123') {
+      const adminEmail = process.env.EXPO_PUBLIC_ADMIN_EMAIL || 'mira@store.com';
+      const adminPassword = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || 'admin123';
+      
+      if (email === adminEmail && password === adminPassword) {
         onLogin();
       } else {
         setError('Invalid credentials. Please try again.');
