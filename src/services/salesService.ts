@@ -70,5 +70,34 @@ export const salesService = {
       id: doc.id,
       ...doc.data()
     })) as Sale[];
+  },
+
+  // Delete a sale and revert product stocks
+  async deleteSale(sale: Sale): Promise<void> {
+    if (!sale.id) return;
+
+    return await runTransaction(db, async (transaction) => {
+      // 1. Revert product stocks
+      for (const item of sale.items) {
+        const productRef = doc(db, PRODUCTS_COLLECTION, item.productId);
+        const productDoc = await transaction.get(productRef);
+        
+        if (productDoc.exists()) {
+          const currentStock = productDoc.data().stock;
+          const newStock = currentStock + item.quantity;
+          const newStatus = newStock > 10 ? 'IN STOCK' : newStock > 0 ? 'LOW STOCK' : 'OUT OF STOCK';
+          
+          transaction.update(productRef, { 
+            stock: newStock,
+            status: newStatus,
+            updatedAt: Timestamp.now() 
+          });
+        }
+      }
+
+      // 2. Delete the sale record
+      const saleRef = doc(db, SALES_COLLECTION, sale.id!);
+      transaction.delete(saleRef);
+    });
   }
 };
