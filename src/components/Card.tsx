@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ViewProps } from 'react-native';
-import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
+import { View, ViewProps } from 'react-native';
+import tw from 'twrnc';
 
 interface CardProps extends ViewProps {
   children: React.ReactNode;
@@ -9,19 +8,8 @@ interface CardProps extends ViewProps {
 
 export const Card = ({ children, style, ...props }: CardProps) => {
   return (
-    <View style={[styles.card, style]} {...props}>
+    <View style={[tw`bg-white rounded-2xl border border-slate-200 p-4 mb-4`, style]} {...props}>
       {children}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: spacing.radius,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-});

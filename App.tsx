@@ -11,6 +11,7 @@ import InventoryList from './src/screens/InventoryList';
 import ProductDetail from './src/screens/ProductDetail';
 import AddItem from './src/screens/AddItem';
 import SalesTracker from './src/screens/SalesTracker';
+import Login from './src/screens/Login';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -26,6 +27,12 @@ function InventoryStack() {
 }
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -50,7 +57,9 @@ export default function App() {
           headerShown: false,
         })}
       >
-        <Tab.Screen name="Dashboard" component={Dashboard} />
+        <Tab.Screen name="Dashboard">
+          {(props) => <Dashboard {...props} onLogout={() => setIsAuthenticated(false)} />}
+        </Tab.Screen>
         <Tab.Screen name="Sales" component={SalesTracker} />
         <Tab.Screen name="Inventory" component={InventoryStack} />
       </Tab.Navigator>

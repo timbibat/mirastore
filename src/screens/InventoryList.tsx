@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, RefreshControl, useWindowDimensions } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, ActivityIndicator, RefreshControl, useWindowDimensions, Modal, Alert, Image } from 'react-native';
+import tw from 'twrnc';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
-import { Search, SlidersHorizontal, MoreVertical, Coffee, FlaskConical, Wine, Package, ChevronLeft, ChevronRight, Image as ImageIcon, ShoppingCart, Plus } from 'lucide-react-native';
+import { Search, SlidersHorizontal, Package, ChevronLeft, ChevronRight, ShoppingCart, Plus } from 'lucide-react-native';
 import { productService, Product } from '../services/productService';
 import { salesService } from '../services/salesService';
-import { Modal, Alert, Image } from 'react-native';
 
 export default function InventoryList({ navigation }: any) {
   const { width } = useWindowDimensions();
@@ -78,7 +77,7 @@ export default function InventoryList({ navigation }: any) {
       
       Alert.alert('Success', `Sold ${qty} ${selectedProduct.name}(s)!`);
       setSellModalVisible(false);
-      fetchProducts(); // Refresh inventory
+      fetchProducts();
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to record sale.');
     } finally {
@@ -87,65 +86,67 @@ export default function InventoryList({ navigation }: any) {
   };
 
   const renderItem = ({ item }: { item: Product }) => {
+    const isInStock = item.status === 'IN STOCK';
+    const isLowStock = item.status === 'LOW STOCK';
+
     return (
-      <View style={styles.card}>
+      <View style={tw`bg-white rounded-2xl mb-4 p-4 border border-slate-200`}>
         <TouchableOpacity 
-          style={styles.cardHeader}
+          style={tw`flex-row items-start`}
           onPress={() => navigation.navigate('ProductDetail', { product: item })}
         >
-          <View style={styles.iconContainer}>
+          <View style={tw`w-[120px] h-[120px] bg-violet-50 rounded-xl justify-center items-center border border-violet-100 overflow-hidden`}>
             {item.imageUrl ? (
-              <Image source={{ uri: item.imageUrl }} style={styles.productImageThumbnail} />
+              <Image source={{ uri: item.imageUrl }} style={tw`w-full h-full`} resizeMode="cover" />
             ) : (
               <Package color={colors.primary} size={24} />
             )}
           </View>
-          <View style={styles.cardContent}>
-            <Text style={styles.skuText}>SKU: {item.sku}</Text>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <View style={styles.badgeRow}>
+          <View style={tw`flex-1 ml-4`}>
+            <Text style={tw`text-[11px] text-slate-500 font-semibold uppercase`}>SKU: {item.sku}</Text>
+            <Text style={tw`text-lg font-bold text-indigo-950 mt-0.5`}>{item.name}</Text>
+            <View style={tw`flex-row mt-2`}>
               {item.isFastMoving && (
-                <View style={[styles.badge, styles.fastMovingBadge]}>
-                  <Text style={styles.fastMovingText}>FAST MOVING</Text>
+                <View style={tw`flex-row items-center px-2 py-1 rounded-full bg-violet-800 mr-1`}>
+                  <Text style={tw`text-white text-[10px] font-bold`}>FAST MOVING</Text>
                 </View>
               )}
               <View style={[
-                styles.badge, 
-                item.status === 'IN STOCK' ? styles.inStockBadge : 
-                item.status === 'LOW STOCK' ? styles.lowStockBadge : styles.outOfStockBadge
+                tw`flex-row items-center px-2 py-1 rounded-full`,
+                isInStock ? tw`bg-emerald-50` : isLowStock ? tw`bg-amber-50` : tw`bg-red-50`
               ]}>
                 <View style={[
-                  styles.dot, 
-                  { backgroundColor: item.status === 'IN STOCK' ? '#10B981' : item.status === 'LOW STOCK' ? '#F59E0B' : '#EF4444' }
+                  tw`w-1.5 h-1.5 rounded-full mr-1.5`,
+                  isInStock ? tw`bg-emerald-500` : isLowStock ? tw`bg-amber-500` : tw`bg-red-500`
                 ]} />
                 <Text style={[
-                  styles.statusText,
-                  { color: item.status === 'IN STOCK' ? '#065F46' : item.status === 'LOW STOCK' ? '#92400E' : '#991B1B' }
+                  tw`text-[10px] font-bold`,
+                  isInStock ? tw`text-emerald-800` : isLowStock ? tw`text-amber-800` : tw`text-red-800`
                 ]}>{item.status}</Text>
               </View>
             </View>
           </View>
         </TouchableOpacity>
 
-        <View style={styles.divider} />
+        <View style={tw`h-[1px] bg-slate-50 my-4`} />
 
-        <View style={styles.cardFooter}>
+        <View style={tw`flex-row justify-between items-center`}>
           <View>
-            <Text style={styles.footerLabel}>Stock</Text>
-            <Text style={styles.footerValue}>{item.stock} {item.unit}</Text>
+            <Text style={tw`text-[11px] text-slate-500 mb-1`}>Stock</Text>
+            <Text style={tw`text-base font-bold text-indigo-950`}>{item.stock} {item.unit}</Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ alignItems: 'flex-end', marginRight: spacing.md }}>
-              <Text style={styles.footerLabel}>Unit Price</Text>
-              <Text style={styles.footerValue}>₱{Number(item.price).toFixed(2)}</Text>
+          <View style={tw`flex-row items-center`}>
+            <View style={tw`items-end mr-4`}>
+              <Text style={tw`text-[11px] text-slate-500 mb-1`}>Unit Price</Text>
+              <Text style={tw`text-base font-bold text-indigo-950`}>₱{Number(item.price).toFixed(2)}</Text>
             </View>
             <TouchableOpacity 
-              style={[styles.sellButton, item.stock === 0 && styles.sellButtonDisabled]}
+              style={[tw`flex-row items-center bg-violet-600 px-4 py-2 rounded-lg`, item.stock === 0 && tw`bg-slate-200`]}
               onPress={() => handleQuickSell(item)}
               disabled={item.stock === 0}
             >
               <ShoppingCart color={colors.white} size={20} />
-              <Text style={styles.sellButtonText}>Sell</Text>
+              <Text style={tw`text-white font-bold text-sm ml-1.5`}>Sell</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -155,7 +156,7 @@ export default function InventoryList({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
+      <View style={tw`flex-1 bg-violet-50 justify-center items-center`}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -167,26 +168,26 @@ export default function InventoryList({ navigation }: any) {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Mira Inventory</Text>
-        <View style={styles.itemCountBadge}>
-          <Text style={styles.itemCountText}>{products.length} Items</Text>
+    <View style={tw`flex-1 w-full bg-violet-50`}>
+      <View style={tw`p-4 flex-row items-center bg-white`}>
+        <Text style={tw`text-2xl font-bold text-indigo-950`}>Mira Inventory</Text>
+        <View style={tw`bg-violet-100 px-2 py-1 rounded-full ml-2`}>
+          <Text style={tw`text-xs text-violet-600 font-semibold`}>{products.length} Items</Text>
         </View>
       </View>
 
-      <View style={styles.searchRow}>
-        <View style={styles.searchContainer}>
-          <Search color={colors.slate200} size={20} style={styles.searchIcon} />
+      <View style={tw`flex-row p-4 bg-white border-b border-slate-50`}>
+        <View style={tw`flex-1 flex-row items-center bg-white px-4 rounded-xl border border-slate-200 mr-2`}>
+          <Search color={colors.slate200} size={20} style={tw`mr-2`} />
           <TextInput
-            style={styles.searchInput}
+            style={tw`flex-1 py-2 text-base text-indigo-950`}
             placeholder="Search item..."
             value={search}
             onChangeText={setSearch}
             placeholderTextColor={colors.slate200}
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity style={tw`bg-white p-2 rounded-xl border border-slate-200 justify-center items-center`}>
           <SlidersHorizontal color={colors.onSurface} size={20} />
         </TouchableOpacity>
       </View>
@@ -195,26 +196,29 @@ export default function InventoryList({ navigation }: any) {
         data={filteredProducts}
         renderItem={renderItem}
         keyExtractor={item => item.id!}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={tw`p-4 grow`}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
         ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No items found.</Text>
+          <View style={tw`mt-24 items-center`}>
+            <Text style={tw`text-base text-slate-500`}>No items found.</Text>
             <TouchableOpacity 
-              style={styles.addFirstButton}
+              style={tw`mt-6 bg-violet-100 px-6 py-4 rounded-3xl border border-violet-600`}
               onPress={() => navigation.navigate('AddItem')}
             >
-              <Text style={styles.addFirstButtonText}>Add Your First Product</Text>
+              <Text style={tw`text-violet-600 font-bold text-base`}>Add Your First Product</Text>
             </TouchableOpacity>
           </View>
         }
       />
 
-      {/* Floating Action Button for Adding Items */}
       <TouchableOpacity 
-        style={[styles.fab, isLargeScreen && styles.fabLargeScreen]}
+        style={[
+          tw`absolute w-15 h-15 rounded-full bg-violet-600 justify-center items-center shadow-lg z-10`,
+          { elevation: 8 },
+          isLargeScreen ? tw`right-10 bottom-[100px]` : tw`right-6 bottom-[90px]`
+        ]}
         onPress={() => navigation.navigate('AddItem')}
       >
         <Plus color={colors.white} size={32} />
@@ -227,42 +231,42 @@ export default function InventoryList({ navigation }: any) {
         visible={sellModalVisible}
         onRequestClose={() => setSellModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Record Sale</Text>
-            <Text style={styles.modalSubtitle}>Product: {selectedProduct?.name}</Text>
+        <View style={tw`flex-1 bg-black/50 justify-center items-center p-4`}>
+          <View style={[tw`bg-white rounded-2xl p-6 w-full max-w-[400px] shadow-md`, { elevation: 5 }]}>
+            <Text style={tw`text-2xl font-extrabold text-indigo-950 mb-1`}>Record Sale</Text>
+            <Text style={tw`text-sm text-violet-600 font-semibold mb-6`}>Product: {selectedProduct?.name}</Text>
             
-            <View style={styles.quantityInputGroup}>
-              <Text style={styles.modalLabel}>How many items sold?</Text>
+            <View style={tw`mb-6`}>
+              <Text style={tw`text-base font-semibold text-indigo-950 mb-2`}>How many items sold?</Text>
               <TextInput
-                style={styles.modalInput}
+                style={tw`bg-slate-50 border border-slate-200 rounded-lg p-4 text-xl font-bold text-indigo-950 text-center`}
                 value={sellQuantity}
                 onChangeText={setSellQuantity}
                 keyboardType="numeric"
                 autoFocus
               />
-              <Text style={styles.availableStockText}>
+              <Text style={tw`text-xs text-slate-500 mt-2 text-center`}>
                 Available: {selectedProduct?.stock} {selectedProduct?.unit}
               </Text>
             </View>
 
-            <View style={styles.modalButtons}>
+            <View style={tw`flex-row justify-between`}>
               <TouchableOpacity 
-                style={styles.cancelButton}
+                style={tw`flex-1 py-4 mr-2 items-center rounded-lg border border-slate-200`}
                 onPress={() => setSellModalVisible(false)}
                 disabled={isSelling}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={tw`text-indigo-950 font-semibold text-base`}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.confirmButton, isSelling && styles.confirmButtonDisabled]}
+                style={[tw`flex-1 bg-violet-600 py-4 ml-2 items-center justify-center rounded-lg`, isSelling && tw`opacity-70`]}
                 onPress={submitSale}
                 disabled={isSelling}
               >
                 {isSelling ? (
                   <ActivityIndicator color={colors.white} size="small" />
                 ) : (
-                  <Text style={styles.confirmButtonText}>Confirm Sale</Text>
+                  <Text style={tw`text-white font-bold text-base`}>Confirm Sale</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -270,13 +274,13 @@ export default function InventoryList({ navigation }: any) {
         </View>
       </Modal>
 
-      <View style={styles.pagination}>
-        <Text style={styles.paginationText}>Showing {filteredProducts.length} of {products.length} items</Text>
-        <View style={styles.paginationButtons}>
-          <TouchableOpacity style={styles.pageButton}>
+      <View style={tw`flex-row justify-between items-center p-4 bg-violet-50 border-t border-violet-100`}>
+        <Text style={tw`text-sm text-slate-500`}>Showing {filteredProducts.length} of {products.length} items</Text>
+        <View style={tw`flex-row`}>
+          <TouchableOpacity style={tw`bg-white border border-slate-200 p-1.5 rounded`}>
             <ChevronLeft color={colors.onSurface} size={20} />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.pageButton, { marginLeft: spacing.xs }]}>
+          <TouchableOpacity style={tw`bg-white border border-slate-200 p-1.5 rounded ml-2`}>
             <ChevronRight color={colors.onSurface} size={20} />
           </TouchableOpacity>
         </View>
@@ -284,377 +288,3 @@ export default function InventoryList({ navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    width: '100%',
-  },
-  largeScreenContainer: {
-    maxWidth: 700,
-    width: '100%',
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: colors.slate100,
-    backgroundColor: colors.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: colors.background,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    padding: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  itemCountBadge: {
-    backgroundColor: colors.secondaryContainer,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginLeft: spacing.sm,
-  },
-  itemCountText: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  searchRow: {
-    flexDirection: 'row',
-    padding: spacing.md,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.slate50,
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    paddingHorizontal: spacing.md,
-    borderRadius: spacing.radius,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-    marginRight: spacing.sm,
-  },
-  searchIcon: {
-    marginRight: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    fontSize: 16,
-    color: colors.onSurface,
-  },
-  filterButton: {
-    backgroundColor: colors.white,
-    padding: spacing.sm,
-    borderRadius: spacing.radius,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  list: {
-    padding: spacing.md,
-    flexGrow: 1,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: spacing.radius,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    backgroundColor: colors.background,
-    borderRadius: spacing.radius,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.secondaryContainer,
-    overflow: 'hidden',
-  },
-  productImageThumbnail: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  cardContent: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  skuText: {
-    fontSize: 11,
-    color: colors.slate500,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  itemName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.onSurface,
-    marginTop: 2,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    marginTop: spacing.sm,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: spacing.xs,
-  },
-  fastMovingBadge: {
-    backgroundColor: colors.primaryContainer,
-  },
-  fastMovingText: {
-    color: colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  inStockBadge: {
-    backgroundColor: '#ECFDF5',
-  },
-  lowStockBadge: {
-    backgroundColor: '#FFFBEB',
-  },
-  outOfStockBadge: {
-    backgroundColor: '#FEF2F2',
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  menuButton: {
-    padding: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.slate50,
-    marginVertical: spacing.md,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  footerLabel: {
-    fontSize: 11,
-    color: colors.slate500,
-    marginBottom: 4,
-  },
-  footerValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  pagination: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.background,
-    borderTopWidth: 1,
-    borderTopColor: colors.secondaryContainer,
-  },
-  paginationText: {
-    fontSize: 14,
-    color: colors.slate500,
-  },
-  paginationButtons: {
-    flexDirection: 'row',
-  },
-  pageButton: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-    padding: 6,
-    borderRadius: 4,
-  },
-  emptyState: {
-    marginTop: 100,
-    alignItems: 'center',
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: colors.slate500,
-  },
-  sellButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  sellButtonDisabled: {
-    backgroundColor: colors.slate200,
-  },
-  sellButtonText: {
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: 14,
-    marginLeft: 6,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  modalContent: {
-    backgroundColor: colors.white,
-    borderRadius: spacing.radius,
-    padding: spacing.xl,
-    width: '100%',
-    maxWidth: 400,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.onSurface,
-    marginBottom: 4,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-    marginBottom: spacing.lg,
-  },
-  quantityInputGroup: {
-    marginBottom: spacing.xl,
-  },
-  modalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.onSurface,
-    marginBottom: spacing.sm,
-  },
-  modalInput: {
-    backgroundColor: colors.slate50,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-    borderRadius: 8,
-    padding: spacing.md,
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.onSurface,
-    textAlign: 'center',
-  },
-  availableStockText: {
-    fontSize: 12,
-    color: colors.slate500,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    marginRight: spacing.sm,
-    alignItems: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-  },
-  cancelButtonText: {
-    color: colors.onSurface,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  confirmButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    marginLeft: spacing.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  confirmButtonDisabled: {
-    opacity: 0.7,
-  },
-  confirmButtonText: {
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 90, // Moved up to clear the pagination bar
-    right: 24,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    zIndex: 10,
-  },
-  fabLargeScreen: {
-    right: 40,
-    bottom: 100, // Also adjusted for large screens
-  },
-  addFirstButton: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.secondaryContainer,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  addFirstButtonText: {
-    color: colors.primary,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-});

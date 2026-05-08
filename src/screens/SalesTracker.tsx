@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions, Image } from 'react-native';
+import tw from 'twrnc';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
 import { Card } from '../components/Card';
-import { TrendingUp, Receipt, Calendar, ArrowUpRight, ArrowDownRight, Package, ChevronDown } from 'lucide-react-native';
+import { TrendingUp, Receipt, Package } from 'lucide-react-native';
 import { salesService, Sale } from '../services/salesService';
 
 export default function SalesTracker({ navigation }: any) {
@@ -56,41 +56,41 @@ export default function SalesTracker({ navigation }: any) {
   const renderSaleItem = ({ item }: { item: Sale }) => {
     const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
     return (
-      <Card style={styles.transactionCard}>
-        <View style={styles.transactionHeader}>
-          <View style={styles.transactionIcon}>
+      <Card style={tw`p-4 mb-2 border-slate-200`}>
+        <View style={tw`flex-row items-center`}>
+          <View style={tw`w-12 h-12 rounded-full bg-slate-50 justify-center items-center overflow-hidden border border-slate-100`}>
             {item.items[0]?.imageUrl ? (
-              <Image source={{ uri: item.items[0].imageUrl }} style={styles.transactionProductImage} />
+              <Image source={{ uri: item.items[0].imageUrl }} style={tw`w-full h-full`} resizeMode="cover" />
             ) : (
-              <View style={styles.receiptIconBox}>
+              <View style={tw`w-10 h-10 rounded-full bg-violet-100 justify-center items-center`}>
                 <Receipt color={colors.primary} size={20} />
               </View>
             )}
           </View>
-          <View style={styles.transactionInfo}>
-            <Text style={styles.transactionTitle} numberOfLines={1}>
+          <View style={tw`flex-1 ml-3`}>
+            <Text style={tw`text-base font-bold text-indigo-950`} numberOfLines={1}>
               {item.items.length > 1 
                 ? `${item.items[0].productName} & ${item.items.length - 1} more`
                 : item.items[0].productName}
             </Text>
-            <Text style={styles.transactionDate}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {date.toLocaleDateString()}</Text>
+            <Text style={tw`text-xs text-slate-500`}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {date.toLocaleDateString()}</Text>
           </View>
-          <Text style={styles.transactionAmount}>₱{item.totalAmount.toFixed(2)}</Text>
+          <Text style={tw`text-base font-extrabold text-indigo-950`}>₱{item.totalAmount.toFixed(2)}</Text>
         </View>
-        <View style={styles.transactionDetails}>
+        <View style={tw`mt-3 pt-3 border-t border-slate-50`}>
           {item.items.map((prod, idx) => (
-            <View key={idx} style={styles.productRow}>
-              <View style={styles.productMainInfo}>
-                <View style={styles.itemImageContainer}>
+            <View key={idx} style={tw`flex-row justify-between mb-1`}>
+              <View style={tw`flex-row items-center`}>
+                <View style={tw`w-7 h-7 rounded-md bg-slate-50 justify-center items-center mr-2 overflow-hidden`}>
                   {prod.imageUrl ? (
-                    <Image source={{ uri: prod.imageUrl }} style={styles.itemThumbnail} />
+                    <Image source={{ uri: prod.imageUrl }} style={tw`w-full h-full`} resizeMode="cover" />
                   ) : (
                     <Package color={colors.slate400} size={14} />
                   )}
                 </View>
-                <Text style={styles.productName}>{prod.productName} x {prod.quantity}</Text>
+                <Text style={tw`text-sm text-slate-500`}>{prod.productName} x {prod.quantity}</Text>
               </View>
-              <Text style={styles.productPrice}>₱{prod.totalPrice.toFixed(2)}</Text>
+              <Text style={tw`text-sm font-semibold text-indigo-950`}>₱{prod.totalPrice.toFixed(2)}</Text>
             </View>
           ))}
         </View>
@@ -100,61 +100,61 @@ export default function SalesTracker({ navigation }: any) {
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
+      <View style={tw`flex-1 justify-center items-center bg-violet-50`}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Sales Tracker</Text>
+    <View style={tw`flex-1 w-full bg-violet-50`}>
+      <View style={tw`pt-6 px-4 pb-4 bg-white border-b border-slate-200`}>
+        <Text style={tw`text-2xl font-extrabold text-violet-600 text-center`}>Sales Tracker</Text>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={tw`p-4`}>
         {/* Period Selector */}
-        <View style={styles.periodSelector}>
+        <View style={tw`flex-row bg-white rounded-lg p-1 mb-4 border border-slate-200`}>
           {['Today', 'Weekly', 'Monthly', 'Total'].map((p) => (
             <TouchableOpacity 
               key={p} 
-              style={[styles.periodButton, period === p && styles.periodButtonActive]}
+              style={[tw`flex-1 py-2 items-center rounded-md`, period === p && tw`bg-violet-600`]}
               onPress={() => setPeriod(p as any)}
             >
-              <Text style={[styles.periodButtonText, period === p && styles.periodButtonTextActive]}>{p}</Text>
+              <Text style={[tw`text-xs font-semibold text-slate-500`, period === p && tw`text-white`]}>{p}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Summary Stats */}
-        <View style={styles.statsRow}>
-          <Card style={[styles.statCard, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.statLabel, { color: colors.white, opacity: 0.8 }]}>{period.toUpperCase()} EARNINGS</Text>
-            <Text style={[styles.statValue, { color: colors.white }]}>₱{totalEarnings.toLocaleString()}</Text>
-            <View style={styles.trendRow}>
+        <View style={tw`flex-row justify-between mb-4`}>
+          <Card style={[tw`w-[48%] p-4 rounded-xl`, { backgroundColor: colors.primary }]}>
+            <Text style={tw`text-[10px] font-bold text-white opacity-80 tracking-wide`}>{period.toUpperCase()} EARNINGS</Text>
+            <Text style={tw`text-2xl font-extrabold text-white my-1`}>₱{totalEarnings.toLocaleString()}</Text>
+            <View style={tw`flex-row items-center`}>
               <TrendingUp color={colors.white} size={14} />
-              <Text style={[styles.trendText, { color: colors.white }]}>Live Data</Text>
+              <Text style={tw`text-[10px] font-semibold text-white ml-1`}>Live Data</Text>
             </View>
           </Card>
           
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>ORDERS</Text>
-            <Text style={[styles.statValue, { color: colors.onSurface }]}>{totalSalesCount}</Text>
-            <View style={styles.trendRow}>
+          <Card style={tw`w-[48%] p-4 rounded-xl border-slate-200`}>
+            <Text style={tw`text-[10px] font-bold text-slate-500 tracking-wide`}>ORDERS</Text>
+            <Text style={tw`text-2xl font-extrabold text-indigo-950 my-1`}>{totalSalesCount}</Text>
+            <View style={tw`flex-row items-center`}>
               <Receipt color={colors.primary} size={14} />
-              <Text style={[styles.trendText, { color: colors.primary }]}>{period} Count</Text>
+              <Text style={tw`text-[10px] font-semibold text-violet-600 ml-1`}>{period} Count</Text>
             </View>
           </Card>
         </View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{period} Transactions</Text>
+        <View style={tw`flex-row justify-between items-center mb-4`}>
+          <Text style={tw`text-lg font-bold text-indigo-950`}>{period} Transactions</Text>
         </View>
 
         {filteredSales.length === 0 ? (
-          <View style={styles.emptyContainer}>
+          <View style={tw`items-center justify-center py-16`}>
             <Receipt color={colors.slate200} size={64} />
-            <Text style={styles.emptyText}>No sales for this period.</Text>
+            <Text style={tw`mt-4 text-base text-slate-500 font-medium`}>No sales for this period.</Text>
           </View>
         ) : (
           <FlatList
@@ -162,276 +162,10 @@ export default function SalesTracker({ navigation }: any) {
             renderItem={renderSaleItem}
             keyExtractor={item => item.id || Math.random().toString()}
             scrollEnabled={false}
-            contentContainerStyle={styles.listContainer}
+            contentContainerStyle={tw`pb-12`}
           />
         )}
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    width: '100%',
-  },
-  largeScreenContainer: {
-    maxWidth: 700,
-    width: '100%',
-    backgroundColor: colors.white,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: colors.slate100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: colors.background,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.slate200,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.primary,
-    textAlign: 'center',
-  },
-  content: {
-    padding: spacing.md,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  periodSelector: {
-    flexDirection: 'row',
-    backgroundColor: colors.white,
-    borderRadius: spacing.radius,
-    padding: 4,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-  },
-  periodButton: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: spacing.radius - 4,
-  },
-  periodButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  periodButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.slate500,
-  },
-  periodButtonTextActive: {
-    color: colors.white,
-  },
-  productMainInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.slate50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.slate100,
-  },
-  transactionProductImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  itemImageContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: colors.slate50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-    overflow: 'hidden',
-  },
-  itemThumbnail: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  statCard: {
-    flex: 0.48,
-    padding: spacing.md,
-    borderRadius: spacing.radius,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.slate500,
-    letterSpacing: 0.5,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    marginVertical: 4,
-  },
-  trendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  trendText: {
-    fontSize: 10,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  secondaryStats: {
-    flexDirection: 'row',
-    backgroundColor: colors.white,
-    borderRadius: spacing.radius,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.slate200,
-  },
-  secStatBox: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  secStatValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  secStatLabel: {
-    fontSize: 12,
-    color: colors.slate500,
-  },
-  secStatDivider: {
-    width: 1,
-    height: '100%',
-    backgroundColor: colors.slate200,
-    marginHorizontal: spacing.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  seeAll: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  listContainer: {
-    paddingBottom: spacing.xl,
-  },
-  transactionCard: {
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderColor: colors.slate200,
-  },
-  transactionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  receiptIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.secondaryContainer,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  transactionInfo: {
-    flex: 1,
-    marginLeft: spacing.sm,
-  },
-  transactionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  transactionDate: {
-    fontSize: 12,
-    color: colors.slate500,
-  },
-  transactionAmount: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.onSurface,
-  },
-  transactionDetails: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.slate50,
-  },
-  productRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  productName: {
-    fontSize: 13,
-    color: colors.slate500,
-  },
-  productPrice: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.onSurface,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: colors.slate500,
-    fontWeight: '500',
-  },
-  actionButton: {
-    marginTop: 24,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
-  },
-  actionButtonText: {
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-});

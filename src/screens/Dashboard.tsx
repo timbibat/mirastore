@@ -1,19 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Image, Modal, Dimensions } from 'react-native';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Image, Modal, Dimensions, Alert } from 'react-native';
+import tw from 'twrnc';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
 import { Card } from '../components/Card';
 import { Menu, Bell, User, Calculator, Store, MoreVertical, Receipt, Package } from 'lucide-react-native';
 import { productService, Product } from '../services/productService';
 import { salesService, Sale } from '../services/salesService';
 
-export default function Dashboard({ navigation }: any) {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+export default function Dashboard({ navigation, onLogout }: any) {
   const { width } = useWindowDimensions();
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Logout", onPress: onLogout, style: "destructive" }
+      ]
+    );
+  };
   
   // Calculator State
   const [calculatorVisible, setCalculatorVisible] = useState(false);
@@ -26,7 +37,6 @@ export default function Dashboard({ navigation }: any) {
       setCalcResult('0');
     } else if (value === '=') {
       try {
-        // Simple evaluation logic (using Function for quick implementation, but in production consider a safer library)
         const result = eval(calcExpression.replace(/×/g, '*').replace(/÷/g, '/'));
         setCalcResult(String(result));
         setCalcExpression(String(result));
@@ -60,12 +70,10 @@ export default function Dashboard({ navigation }: any) {
     return unsubscribe;
   }, [navigation]);
 
-  // Inventory metrics
   const totalItems = products.length;
   const fullyStocked = products.filter(p => p.stock > 10).length;
   const needsRestock = products.filter(p => p.stock <= 5).length;
 
-  // Sales metrics
   const today = new Date().toDateString();
   const todaySales = sales.filter(s => {
     const date = s.timestamp?.toDate ? s.timestamp.toDate() : new Date(s.timestamp);
@@ -73,80 +81,76 @@ export default function Dashboard({ navigation }: any) {
   });
   const todayEarnings = todaySales.reduce((sum, sale) => sum + sale.totalAmount, 0);
 
-  // Chart data (last 8 sales or mock bars if few sales)
   const barData = sales.length > 0 
     ? sales.slice(0, 8).reverse().map(s => (s.totalAmount / 100) * 10) 
     : [30, 50, 40, 60, 55, 75, 70, 100];
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered]}>
+      <View style={tw`flex-1 w-full bg-white justify-center items-center`}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.container}>
+    <View style={tw`flex-1 w-full bg-white`}>
+      <ScrollView style={tw`flex-1 w-full bg-white`}>
         {/* Header */}
-        <View style={styles.header}>
-          <Menu color={colors.primary} size={24} />
-          <Text style={styles.headerTitle}>Mira's Sari-Sari Store</Text>
-          <View style={styles.headerIcons}>
-            <Bell color={colors.primary} size={24} style={styles.icon} />
-            <View style={styles.profilePic}>
+        <View style={tw`pt-6 px-4 pb-4 flex-row items-center justify-between bg-violet-50`}>
+          <Text style={tw`text-xl font-extrabold text-violet-600 text-center flex-1`}>Mira's Sari-Sari Store</Text>
+          <View style={tw`flex-row items-center`}>
+            <TouchableOpacity onPress={handleLogout} style={tw`w-8 h-8 rounded-full bg-slate-200 justify-center items-center`}>
               <User color={colors.slate500} size={20} />
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.content}>
+        <View style={tw`p-4`}>
           {/* Greeting */}
-          <View style={styles.greetingSection}>
-            <Text style={styles.greetingTitle}>Kumusta, Mira!</Text>
-            <Text style={styles.greetingSubtitle}>Here's your store update for today.</Text>
+          <View style={tw`mt-4 mb-6`}>
+            <Text style={tw`text-3xl font-extrabold text-indigo-950`}>Kumusta, Mira!</Text>
+            <Text style={tw`text-sm text-slate-500 mt-1`}>Here's your store update for today.</Text>
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.actionRow}>
+          <View style={tw`flex-row justify-between mb-6`}>
             <TouchableOpacity 
-              style={[styles.actionButton, styles.outlineButton]}
+              style={tw`w-[48%] flex-row items-center justify-center py-4 rounded-xl border border-slate-200 bg-white`}
               onPress={() => setCalculatorVisible(true)}
             >
               <Calculator color={colors.onSurface} size={20} />
-              <Text style={styles.outlineButtonText}>Calculator</Text>
+              <Text style={tw`text-base font-bold text-indigo-950 ml-2`}>Calculator</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.actionButton, styles.solidButton]}
+              style={tw`w-[48%] flex-row items-center justify-center py-4 rounded-xl border border-violet-600 bg-violet-600`}
               onPress={() => navigation.navigate('Sales')}
             >
               <Store color={colors.white} size={20} />
-              <Text style={styles.solidButtonText}>New Sale</Text>
+              <Text style={tw`text-base font-bold text-white ml-2`}>New Sale</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.dashboardGrid}>
+          <View style={tw`flex-row flex-wrap justify-between mb-6`}>
             {/* Today's Sales Card */}
-            <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('Sales')}>
-              <Card style={styles.salesCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardSmallTitle}>TODAY'S SALES</Text>
+            <TouchableOpacity style={tw`w-[48%] mb-4`} onPress={() => navigation.navigate('Sales')}>
+              <Card style={tw`p-4 h-full border-slate-200`}>
+                <View style={tw`flex-row justify-between items-center mb-2`}>
+                  <Text style={tw`text-xs font-bold text-slate-500 tracking-wider`}>TODAY'S SALES</Text>
                   <MoreVertical color={colors.onSurface} size={20} />
                 </View>
-                <View style={styles.salesValueRow}>
-                  <Text style={styles.salesValue}>₱{todayEarnings.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+                <View style={tw`flex-row items-center mb-2`}>
+                  <Text style={tw`text-2xl font-extrabold text-violet-600`}>₱{todayEarnings.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
                 </View>
 
                 {/* Simple Bar Chart */}
-                <View style={styles.chartContainer}>
+                <View style={tw`flex-row items-end justify-between h-16 mt-4`}>
                   {barData.map((height, index) => (
                     <View 
                       key={index} 
                       style={[
-                        styles.bar, 
-                        { height: Math.min(height, 80) }, 
-                        index === barData.length - 1 && styles.activeBar
+                        tw`w-[10%] rounded-sm ${index === barData.length - 1 ? 'bg-violet-600' : 'bg-slate-50'}`,
+                        { height: Math.min(height, 80) }
                       ]} 
                     />
                   ))}
@@ -155,76 +159,76 @@ export default function Dashboard({ navigation }: any) {
             </TouchableOpacity>
 
             {/* Store Status Card */}
-            <Card style={[styles.statusCard, styles.gridItem]}>
-              <Text style={styles.cardSmallTitle}>STORE STATUS</Text>
+            <Card style={tw`p-4 h-full border-slate-200 w-[48%] mb-4`}>
+              <Text style={tw`text-xs font-bold text-slate-500 tracking-wider mb-2`}>STORE STATUS</Text>
               
-              <View style={styles.statusRow}>
-                <Text style={styles.statusLabel}>Total Items</Text>
-                <Text style={styles.statusValue}>{totalItems}</Text>
+              <View style={tw`flex-row justify-between items-center py-1`}>
+                <Text style={tw`text-xs font-semibold text-indigo-950`}>Total Items</Text>
+                <Text style={tw`text-sm font-bold text-indigo-950`}>{totalItems}</Text>
               </View>
               
-              <View style={styles.statusDivider} />
+              <View style={tw`h-[1px] bg-slate-50 my-1`} />
 
-              <View style={styles.statusRow}>
-                <View style={styles.labelWithDot}>
-                  <View style={[styles.dot, { backgroundColor: colors.secondaryContainer }]} />
-                  <Text style={styles.statusLabel}>Fully Stocked</Text>
+              <View style={tw`flex-row justify-between items-center py-1`}>
+                <View style={tw`flex-row items-center`}>
+                  <View style={tw`w-1.5 h-1.5 rounded-full bg-violet-100 mr-1.5`} />
+                  <Text style={tw`text-xs font-semibold text-indigo-950`}>Fully Stocked</Text>
                 </View>
-                <Text style={styles.statusValue}>{fullyStocked}</Text>
+                <Text style={tw`text-sm font-bold text-indigo-950`}>{fullyStocked}</Text>
               </View>
 
-              <View style={styles.statusDivider} />
+              <View style={tw`h-[1px] bg-slate-50 my-1`} />
 
-              <View style={styles.statusRow}>
-                <View style={styles.labelWithDot}>
-                  <View style={[styles.dot, { backgroundColor: colors.primary }]} />
-                  <Text style={[styles.statusLabel, { color: colors.primary }]}>Needs Restock</Text>
+              <View style={tw`flex-row justify-between items-center py-1`}>
+                <View style={tw`flex-row items-center`}>
+                  <View style={tw`w-1.5 h-1.5 rounded-full bg-violet-600 mr-1.5`} />
+                  <Text style={tw`text-xs font-semibold text-violet-600`}>Needs Restock</Text>
                 </View>
-                <Text style={[styles.statusValue, { color: colors.primary }]}>{needsRestock}</Text>
+                <Text style={tw`text-sm font-bold text-violet-600`}>{needsRestock}</Text>
               </View>
             </Card>
           </View>
 
           {/* Recent Transactions */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+          <View style={tw`flex-row justify-between items-center mb-4 mt-4`}>
+            <Text style={tw`text-xl font-extrabold text-indigo-950`}>Recent Transactions</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Sales')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={tw`text-sm font-semibold text-violet-600`}>See All</Text>
             </TouchableOpacity>
           </View>
 
           {sales.slice(0, 3).map((sale) => (
-            <Card key={sale.id} style={styles.transactionCard}>
-              <View style={styles.transactionHeader}>
-                <View style={styles.transactionIcon}>
+            <Card key={sale.id} style={tw`p-4 mb-2 border-slate-100`}>
+              <View style={tw`flex-row items-center`}>
+                <View style={tw`w-10 h-10 rounded-full bg-violet-100 justify-center items-center`}>
                   <Receipt color={colors.primary} size={20} />
                 </View>
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.transactionTitle} numberOfLines={1}>
+                <View style={tw`flex-1 ml-3`}>
+                  <Text style={tw`text-sm font-bold text-indigo-950`} numberOfLines={1}>
                     {sale.items.length > 1 
                       ? `${sale.items[0].productName} & ${sale.items.length - 1} more`
                       : sale.items[0].productName}
                   </Text>
-                  <Text style={styles.transactionDate}>
+                  <Text style={tw`text-xs text-slate-500`}>
                     {sale.timestamp?.toDate ? sale.timestamp.toDate().toLocaleDateString() : 'Just now'}
                   </Text>
                 </View>
-                <Text style={styles.transactionAmount}>₱{sale.totalAmount.toFixed(2)}</Text>
+                <Text style={tw`text-sm font-extrabold text-indigo-950`}>₱{sale.totalAmount.toFixed(2)}</Text>
               </View>
-              <View style={styles.transactionProducts}>
+              <View style={tw`mt-3 pt-3 border-t border-slate-50`}>
                 {sale.items.map((item, idx) => (
-                  <View key={idx} style={styles.itemRow}>
-                    <View style={styles.itemNameGroup}>
-                      <View style={styles.miniIconBox}>
+                  <View key={idx} style={tw`flex-row justify-between items-center mb-1`}>
+                    <View style={tw`flex-row items-center`}>
+                      <View style={tw`w-5 h-5 rounded bg-slate-50 justify-center items-center mr-2 overflow-hidden`}>
                         {item.imageUrl ? (
-                          <Image source={{ uri: item.imageUrl }} style={styles.miniProductImage} />
+                          <Image source={{ uri: item.imageUrl }} style={tw`w-full h-full`} resizeMode="cover" />
                         ) : (
                           <Package color={colors.slate400} size={10} />
                         )}
                       </View>
-                      <Text style={styles.itemName}>{item.productName} x {item.quantity}</Text>
+                      <Text style={tw`text-xs text-slate-500`}>{item.productName} x {item.quantity}</Text>
                     </View>
-                    <Text style={styles.itemPrice}>₱{item.totalPrice.toFixed(2)}</Text>
+                    <Text style={tw`text-xs font-semibold text-indigo-950`}>₱{item.totalPrice.toFixed(2)}</Text>
                   </View>
                 ))}
               </View>
@@ -240,36 +244,39 @@ export default function Dashboard({ navigation }: any) {
         visible={calculatorVisible}
         onRequestClose={() => setCalculatorVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.calcContainer}>
-            <View style={styles.calcHeader}>
-              <Text style={styles.calcTitle}>Store Calculator</Text>
+        <View style={tw`flex-1 bg-black/50 items-center ${SCREEN_WIDTH < 768 ? 'justify-end' : 'justify-center'}`}>
+          <View style={[
+            tw`bg-white w-full shadow-2xl p-6 ${SCREEN_WIDTH < 768 ? 'rounded-t-3xl pb-10' : 'max-w-[360px] rounded-3xl'}`,
+            { elevation: 24 }
+          ]}>
+            <View style={tw`flex-row justify-between items-center mb-4 ${SCREEN_WIDTH < 768 ? 'pt-1' : ''}`}>
+              <Text style={tw`text-lg font-extrabold text-indigo-950`}>Store Calculator</Text>
               <TouchableOpacity onPress={() => setCalculatorVisible(false)}>
-                <Text style={styles.closeText}>Close</Text>
+                <Text style={tw`text-sm font-bold text-violet-600`}>Close</Text>
               </TouchableOpacity>
             </View>
             
-            <View style={styles.calcDisplay}>
-              <Text style={styles.calcExpression}>{calcExpression || '0'}</Text>
-              <Text style={styles.calcResult}>= ₱{Number(calcResult).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+            <View style={tw`bg-slate-50 rounded-2xl p-6 mb-6 items-end border border-slate-100`}>
+              <Text style={tw`text-base text-slate-500 mb-1 font-medium`}>{calcExpression || '0'}</Text>
+              <Text style={tw`text-3xl font-black text-violet-600`}>= ₱{Number(calcResult).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
             </View>
             
-            <View style={styles.calcButtons}>
+            <View style={tw`flex-row flex-wrap justify-between`}>
               {['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', '0', '.', 'C', '+', '='].map((btn) => (
                 <TouchableOpacity 
                   key={btn} 
                   style={[
-                    styles.calcBtn, 
-                    btn === '=' && styles.calcBtnEqual,
-                    ['÷', '×', '-', '+'].includes(btn) && styles.calcBtnOp,
-                    btn === 'C' && styles.calcBtnClear
+                    tw`w-[23%] aspect-[1.1] bg-white rounded-xl justify-center items-center mb-2 border border-slate-200`,
+                    btn === '=' ? tw`w-full aspect-[5] mt-1 bg-violet-600 border-violet-600` : null,
+                    ['÷', '×', '-', '+'].includes(btn) ? tw`bg-violet-800 border-violet-800` : null,
+                    btn === 'C' ? tw`bg-red-100 border-red-100` : null
                   ]}
                   onPress={() => handleCalcInput(btn)}
                 >
                   <Text style={[
-                    styles.calcBtnText,
-                    ['÷', '×', '-', '+', '='].includes(btn) && styles.calcBtnTextWhite,
-                    btn === 'C' && styles.calcBtnTextClear
+                    tw`text-xl font-bold text-indigo-950`,
+                    ['÷', '×', '-', '+', '='].includes(btn) ? tw`text-white` : null,
+                    btn === 'C' ? tw`text-red-500` : null
                   ]}>{btn}</Text>
                 </TouchableOpacity>
               ))}
@@ -280,397 +287,3 @@ export default function Dashboard({ navigation }: any) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    width: '100%',
-  },
-  largeScreenContainer: {
-    maxWidth: 700,
-    width: '100%',
-    backgroundColor: colors.white,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: colors.slate100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: colors.white,
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    paddingTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.background,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.primary,
-    textAlign: 'center',
-    flex: 1,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  icon: {
-    marginRight: spacing.sm,
-  },
-  profilePic: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.slate200,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    padding: spacing.md,
-  },
-  greetingSection: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  greetingTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.onSurface,
-  },
-  greetingSubtitle: {
-    fontSize: 14,
-    color: colors.slate500,
-    marginTop: 4,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xl,
-  },
-  actionButton: {
-    flex: 0.48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    borderRadius: spacing.radius,
-    borderWidth: 1,
-  },
-  outlineButton: {
-    backgroundColor: colors.white,
-    borderColor: colors.slate200,
-  },
-  solidButton: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  outlineButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.onSurface,
-    marginLeft: 8,
-  },
-  solidButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.white,
-    marginLeft: 8,
-  },
-  dashboardGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  gridItem: {
-    width: '48%',
-    marginBottom: spacing.md,
-  },
-  salesCard: {
-    padding: spacing.md,
-    height: '100%',
-    borderColor: colors.slate200,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  cardSmallTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.slate500,
-    letterSpacing: 0.5,
-  },
-  salesValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  salesValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  chartContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 60,
-    marginTop: spacing.md,
-  },
-  bar: {
-    width: '10%',
-    backgroundColor: colors.slate50,
-    borderRadius: 2,
-  },
-  activeBar: {
-    backgroundColor: colors.primary,
-  },
-  statusCard: {
-    padding: spacing.md,
-    height: '100%',
-    borderColor: colors.slate200,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  statusLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.onSurface,
-  },
-  statusValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  statusDivider: {
-    height: 1,
-    backgroundColor: colors.slate50,
-  },
-  labelWithDot: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 6,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    marginTop: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.onSurface,
-  },
-  seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  transactionCard: {
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderColor: colors.slate100,
-  },
-  transactionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  transactionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.secondaryContainer,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  transactionInfo: {
-    flex: 1,
-    marginLeft: spacing.sm,
-  },
-  transactionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  transactionDate: {
-    fontSize: 12,
-    color: colors.slate500,
-  },
-  transactionAmount: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: colors.onSurface,
-  },
-  transactionProducts: {
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.slate50,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  itemNameGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  miniIconBox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    backgroundColor: colors.slate50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    overflow: 'hidden',
-  },
-  miniProductImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  itemName: {
-    fontSize: 12,
-    color: colors.slate500,
-  },
-  itemPrice: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.onSurface,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: SCREEN_WIDTH < 768 ? 'flex-end' : 'center',
-    alignItems: 'center',
-  },
-  calcContainer: {
-    backgroundColor: colors.white,
-    width: '100%',
-    maxWidth: SCREEN_WIDTH < 768 ? '100%' : 360,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    borderBottomLeftRadius: SCREEN_WIDTH < 768 ? 0 : 32,
-    borderBottomRightRadius: SCREEN_WIDTH < 768 ? 0 : 32,
-    padding: spacing.lg,
-    paddingBottom: SCREEN_WIDTH < 768 ? 40 : spacing.lg,
-    elevation: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-  },
-  calcHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    paddingTop: SCREEN_WIDTH < 768 ? spacing.xs : 0,
-  },
-  calcTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.onSurface,
-  },
-  closeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  calcDisplay: {
-    backgroundColor: colors.slate50,
-    borderRadius: 16,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    alignItems: 'flex-end',
-    borderWidth: 1,
-    borderColor: colors.slate100,
-  },
-  calcExpression: {
-    fontSize: 16,
-    color: colors.slate500,
-    marginBottom: 4,
-    fontWeight: '500',
-  },
-  calcResult: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: colors.primary,
-  },
-  calcButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  calcBtn: {
-    width: '23%',
-    aspectRatio: 1.1,
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-  },
-  calcBtnText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.onSurface,
-  },
-  calcBtnTextWhite: {
-    color: colors.white,
-  },
-  calcBtnOp: {
-    backgroundColor: colors.primaryContainer,
-    borderColor: colors.primaryContainer,
-  },
-  calcBtnEqual: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-    width: '100%',
-    aspectRatio: 5,
-    marginTop: 4,
-    borderRadius: 12,
-  },
-  calcBtnClear: {
-    backgroundColor: '#FEE2E2',
-    borderColor: '#FEE2E2',
-  },
-  calcBtnTextClear: {
-    color: '#EF4444',
-  },
-});

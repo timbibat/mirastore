@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, useWindowDimensions, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, useWindowDimensions, Alert, TouchableOpacity } from 'react-native';
+import tw from 'twrnc';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
 import { Button } from '../components/Button';
 import { ArrowLeft, Edit3, Trash2 } from 'lucide-react-native';
 import { productService } from '../services/productService';
@@ -44,13 +44,13 @@ export default function ProductDetail({ route, navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
+    <View style={tw`flex-1 w-full bg-violet-50`}>
+      <ScrollView style={tw`flex-1 w-full bg-violet-50`}>
+        <View style={tw`p-4 flex-row justify-between items-center bg-white border-b border-slate-100`}>
           <ArrowLeft color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
-          <View style={styles.headerActions}>
-            <TouchableOpacity onPress={handleEdit}>
-              <Edit3 color={colors.onSurface} size={24} style={styles.icon} />
+          <View style={tw`flex-row items-center`}>
+            <TouchableOpacity onPress={handleEdit} style={tw`mr-4`}>
+              <Edit3 color={colors.onSurface} size={24} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleDelete}>
               <Trash2 color={colors.error} size={24} />
@@ -58,27 +58,27 @@ export default function ProductDetail({ route, navigation }: any) {
           </View>
         </View>
 
-        <View style={styles.imageContainer}>
+        <View style={tw`w-full h-[300px] bg-white items-center justify-center border-b border-slate-200`}>
           {product.imageUrl ? (
-            <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
+            <Image source={{ uri: product.imageUrl }} style={tw`w-full h-full`} resizeMode="contain" />
           ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.imageText}>No Product Image</Text>
+            <View style={tw`flex-1 justify-center items-center`}>
+              <Text style={tw`text-slate-500`}>No Product Image</Text>
             </View>
           )}
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.sku}>{product.sku}</Text>
-          <Text style={styles.name}>{product.name}</Text>
-          <Text style={styles.price}>₱{product.price}</Text>
+        <View style={tw`p-4 bg-white mt-2`}>
+          <Text style={tw`text-xs text-slate-500 uppercase tracking-widest font-semibold mb-1`}>{product.sku}</Text>
+          <Text style={tw`text-2xl font-extrabold text-indigo-950 mb-1`}>{product.name}</Text>
+          <Text style={tw`text-2xl font-bold text-violet-600 mb-6`}>₱{product.price}</Text>
 
-          <View style={styles.stockSection}>
+          <View style={tw`flex-row justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6`}>
             <View>
-              <Text style={styles.stockLabel}>Available Stock</Text>
+              <Text style={tw`text-xs font-semibold text-slate-500 uppercase`}>Available Stock</Text>
               <Text style={[
-                styles.stockValue,
-                product.stock === 0 ? styles.outOfStock : product.stock < 10 ? styles.lowStock : styles.inStock
+                tw`text-xl font-bold mt-1`,
+                product.stock === 0 ? tw`text-red-600` : product.stock < 10 ? tw`text-amber-500` : tw`text-emerald-600`
               ]}>
                 {product.stock} {product.unit || 'Units'}
               </Text>
@@ -86,130 +86,17 @@ export default function ProductDetail({ route, navigation }: any) {
             <Button title="Update Stock" variant="outline" onPress={handleEdit} />
           </View>
 
-          <View style={styles.detailsBox}>
-            <Text style={styles.detailsTitle}>Product Details</Text>
-            <Text style={styles.detailsText}>
-              Category: {product.category || 'General'}
-              {product.isFastMoving ? '\n✨ Fast Moving Item' : ''}
-            </Text>
+          <View style={tw`mb-4`}>
+            <Text style={tw`text-base font-bold text-indigo-950 mb-2`}>Product Details</Text>
+            <View style={tw`bg-slate-50 p-4 rounded-xl border border-slate-100`}>
+              <Text style={tw`text-sm font-medium text-indigo-950 leading-5`}>
+                Category: <Text style={tw`font-bold`}>{product.category || 'General'}</Text>
+                {product.isFastMoving ? '\n\n✨ Fast Moving Item' : ''}
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-  },
-  largeScreenContainer: {
-    maxWidth: 700,
-    width: '100%',
-    backgroundColor: colors.white,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: colors.slate100,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
-  },
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: colors.background,
-  },
-  header: {
-    padding: spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerActions: {
-    flexDirection: 'row',
-  },
-  icon: {
-    marginRight: spacing.md,
-  },
-  imageContainer: {
-    width: '100%',
-    height: 300,
-    backgroundColor: colors.slate50,
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  imagePlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imageText: {
-    color: colors.slate500,
-  },
-  content: {
-    padding: spacing.md,
-  },
-  sku: {
-    fontSize: 12,
-    color: colors.slate500,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.onSurface,
-    marginBottom: spacing.xs,
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: spacing.lg,
-  },
-  stockSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: spacing.md,
-    borderRadius: spacing.radius,
-    borderWidth: 1,
-    borderColor: colors.slate200,
-    marginBottom: spacing.lg,
-  },
-  stockLabel: {
-    fontSize: 12,
-    color: colors.slate500,
-  },
-  stockValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  inStock: { color: colors.primary },
-  lowStock: { color: colors.amber },
-  outOfStock: { color: colors.crimson },
-  detailsBox: {
-    marginTop: spacing.md,
-  },
-  detailsTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.onSurface,
-    marginBottom: spacing.sm,
-  },
-  detailsText: {
-    fontSize: 14,
-    color: colors.onSurfaceVariant,
-    lineHeight: 20,
-  },
-});
