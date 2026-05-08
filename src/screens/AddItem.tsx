@@ -74,8 +74,8 @@ export default function AddItem({ route, navigation }: any) {
   };
 
   return (
-    <View style={styles.outerContainer}>
-      <ScrollView style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
+    <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{editingProduct ? 'Edit Product' : 'Add New Item'}</Text>
           <X color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
@@ -188,12 +188,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   largeScreenContainer: {
-    maxWidth: 600,
+    maxWidth: 700,
     width: '100%',
     backgroundColor: colors.white,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.slate100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   container: {
     flex: 1,

@@ -162,8 +162,7 @@ export default function InventoryList({ navigation }: any) {
   );
 
   return (
-    <View style={styles.outerContainer}>
-      <View style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Mira Inventory</Text>
         <View style={styles.itemCountBadge}>
@@ -277,7 +276,6 @@ export default function InventoryList({ navigation }: any) {
           </TouchableOpacity>
         </View>
       </View>
-      </View>
     </View>
   );
 }
@@ -290,17 +288,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   largeScreenContainer: {
-    maxWidth: 600, // Better centered width for sari-sari store context
+    maxWidth: 700,
     width: '100%',
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.slate100,
     backgroundColor: colors.white,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 5,
   },
   container: {
     flex: 1,

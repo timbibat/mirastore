@@ -77,8 +77,7 @@ export default function SalesTracker({ navigation }: any) {
   }
 
   return (
-    <View style={styles.outerContainer}>
-      <View style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Sales Tracker</Text>
       </View>
@@ -152,7 +151,6 @@ export default function SalesTracker({ navigation }: any) {
           />
         )}
       </ScrollView>
-      </View>
     </View>
   );
 }
@@ -165,12 +163,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   largeScreenContainer: {
-    maxWidth: 600,
+    maxWidth: 700,
     width: '100%',
     backgroundColor: colors.white,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.slate100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   container: {
     flex: 1,

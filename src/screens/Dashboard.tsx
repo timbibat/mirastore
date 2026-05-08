@@ -44,8 +44,8 @@ export default function Dashboard({ navigation }: any) {
   }
 
   return (
-    <View style={styles.outerContainer}>
-      <ScrollView style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
+    <View style={styles.container}>
+      <ScrollView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <Menu color={colors.primary} size={24} />
@@ -151,12 +151,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   largeScreenContainer: {
-    maxWidth: 600,
+    maxWidth: 700,
     width: '100%',
     backgroundColor: colors.white,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: colors.slate100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   container: {
     flex: 1,
