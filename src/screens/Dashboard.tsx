@@ -33,7 +33,7 @@ export default function Dashboard({ navigation }: any) {
   const totalItems = products.length;
   const fullyStocked = products.filter(p => p.stock > 10).length;
   const needsRestock = products.filter(p => p.stock <= 5).length;
-  const barData = [30, 50, 40, 60, 55, 75, 70, 100]; // Still mock, but UI is live
+  const barData = [30, 50, 40, 60, 55, 75, 70, 100]; 
 
   if (loading) {
     return (
@@ -46,98 +46,98 @@ export default function Dashboard({ navigation }: any) {
   return (
     <View style={styles.outerContainer}>
       <ScrollView style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Menu color={colors.primary} size={24} />
-        <Text style={styles.headerTitle}>Mira's Sari-Sari Store</Text>
-        <View style={styles.headerIcons}>
-          <Bell color={colors.primary} size={24} style={styles.icon} />
-          <View style={styles.profilePic}>
-            <User color={colors.slate500} size={20} />
+        {/* Header */}
+        <View style={styles.header}>
+          <Menu color={colors.primary} size={24} />
+          <Text style={styles.headerTitle}>Mira's Sari-Sari Store</Text>
+          <View style={styles.headerIcons}>
+            <Bell color={colors.primary} size={24} style={styles.icon} />
+            <View style={styles.profilePic}>
+              <User color={colors.slate500} size={20} />
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.content}>
-        {/* Greeting */}
-        <View style={styles.greetingSection}>
-          <Text style={styles.greetingTitle}>Kumusta, Mira!</Text>
-          <Text style={styles.greetingSubtitle}>Here's your store update for today.</Text>
-        </View>
+        <View style={styles.content}>
+          {/* Greeting */}
+          <View style={styles.greetingSection}>
+            <Text style={styles.greetingTitle}>Kumusta, Mira!</Text>
+            <Text style={styles.greetingSubtitle}>Here's your store update for today.</Text>
+          </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity style={[styles.actionButton, styles.outlineButton]}>
-            <Calculator color={colors.onSurface} size={20} />
-            <Text style={styles.outlineButtonText}>Calculator</Text>
+          {/* Action Buttons */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity style={[styles.actionButton, styles.outlineButton]}>
+              <Calculator color={colors.onSurface} size={20} />
+              <Text style={styles.outlineButtonText}>Calculator</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.solidButton]}
+              onPress={() => navigation.navigate('Sales')}
+            >
+              <Store color={colors.white} size={20} />
+              <Text style={styles.solidButtonText}>New Sale</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Today's Sales Card */}
+          <TouchableOpacity onPress={() => navigation.navigate('Sales')}>
+            <Card style={styles.salesCard}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardSmallTitle}>TODAY'S SALES</Text>
+                <MoreVertical color={colors.onSurface} size={20} />
+              </View>
+              <View style={styles.salesValueRow}>
+                <Text style={styles.salesValue}>₱2,450.00</Text>
+                <View style={styles.trendBox} />
+              </View>
+
+              {/* Simple Bar Chart */}
+              <View style={styles.chartContainer}>
+                {barData.map((height, index) => (
+                  <View 
+                    key={index} 
+                    style={[
+                      styles.bar, 
+                      { height: height * 0.8 }, 
+                      index === barData.length - 1 && styles.activeBar
+                    ]} 
+                  />
+                ))}
+              </View>
+            </Card>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.solidButton]}
-            onPress={() => navigation.navigate('Sales')}
-          >
-            <Store color={colors.white} size={20} />
-            <Text style={styles.solidButtonText}>New Sale</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Today's Sales Card */}
-        <TouchableOpacity onPress={() => navigation.navigate('Sales')}>
-          <Card style={styles.salesCard}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardSmallTitle}>TODAY'S SALES</Text>
-              <MoreVertical color={colors.onSurface} size={20} />
+          {/* Store Status Card */}
+          <Card style={styles.statusCard}>
+            <Text style={styles.cardSmallTitle}>STORE STATUS</Text>
+            
+            <View style={styles.statusRow}>
+              <Text style={styles.statusLabel}>Total Items</Text>
+              <Text style={styles.statusValue}>{totalItems}</Text>
             </View>
-            <View style={styles.salesValueRow}>
-              <Text style={styles.salesValue}>₱2,450.00</Text>
-              <View style={styles.trendBox} />
+            
+            <View style={styles.statusDivider} />
+
+            <View style={styles.statusRow}>
+              <View style={styles.labelWithDot}>
+                <View style={[styles.dot, { backgroundColor: colors.secondaryContainer }]} />
+                <Text style={styles.statusLabel}>Fully Stocked</Text>
+              </View>
+              <Text style={styles.statusValue}>{fullyStocked}</Text>
             </View>
 
-            {/* Simple Bar Chart */}
-            <View style={styles.chartContainer}>
-              {barData.map((height, index) => (
-                <View 
-                  key={index} 
-                  style={[
-                    styles.bar, 
-                    { height: height * 0.8 }, 
-                    index === barData.length - 1 && styles.activeBar
-                  ]} 
-                />
-              ))}
+            <View style={styles.statusDivider} />
+
+            <View style={styles.statusRow}>
+              <View style={styles.labelWithDot}>
+                <View style={[styles.dot, { backgroundColor: colors.primary }]} />
+                <Text style={[styles.statusLabel, { color: colors.primary }]}>Needs Restock</Text>
+              </View>
+              <Text style={[styles.statusValue, { color: colors.primary }]}>{needsRestock}</Text>
             </View>
           </Card>
-        </TouchableOpacity>
-
-        {/* Store Status Card */}
-        <Card style={styles.statusCard}>
-          <Text style={styles.cardSmallTitle}>STORE STATUS</Text>
-          
-          <View style={styles.statusRow}>
-            <Text style={styles.statusLabel}>Total Items</Text>
-            <Text style={styles.statusValue}>{totalItems}</Text>
-          </View>
-          
-          <View style={styles.statusDivider} />
-
-          <View style={styles.statusRow}>
-            <View style={styles.labelWithDot}>
-              <View style={[styles.dot, { backgroundColor: colors.secondaryContainer }]} />
-              <Text style={styles.statusLabel}>Fully Stocked</Text>
-            </View>
-            <Text style={styles.statusValue}>{fullyStocked}</Text>
-          </View>
-
-          <View style={styles.statusDivider} />
-
-          <View style={styles.statusRow}>
-            <View style={styles.labelWithDot}>
-              <View style={[styles.dot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.statusLabel, { color: colors.primary }]}>Needs Restock</Text>
-            </View>
-            <Text style={[styles.statusValue, { color: colors.primary }]}>{needsRestock}</Text>
-          </View>
-        </Card>
-      </View>
+        </View>
       </ScrollView>
     </View>
   );

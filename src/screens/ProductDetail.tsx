@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, useWindowDimensions } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { Button } from '../components/Button';
@@ -7,54 +7,72 @@ import { ArrowLeft, Edit3, Trash2 } from 'lucide-react-native';
 
 export default function ProductDetail({ route, navigation }: any) {
   const { product } = route.params;
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <ArrowLeft color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
-        <View style={styles.headerActions}>
-          <Edit3 color={colors.onSurface} size={20} style={styles.icon} />
-          <Trash2 color={colors.crimson} size={20} />
+    <View style={styles.outerContainer}>
+      <ScrollView style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
+        <View style={styles.header}>
+          <ArrowLeft color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
+          <View style={styles.headerActions}>
+            <Edit3 color={colors.onSurface} size={20} style={styles.icon} />
+            <Trash2 color={colors.crimson} size={20} />
+          </View>
         </View>
-      </View>
 
-      <View style={styles.imagePlaceholder}>
-        <Text style={styles.imageText}>Product Image</Text>
-      </View>
+        <View style={styles.imagePlaceholder}>
+          <Text style={styles.imageText}>Product Image</Text>
+        </View>
 
-      <View style={styles.content}>
-        <Text style={styles.sku}>{product.sku}</Text>
-        <Text style={styles.name}>{product.name}</Text>
-        <Text style={styles.price}>${product.price}</Text>
+        <View style={styles.content}>
+          <Text style={styles.sku}>{product.sku}</Text>
+          <Text style={styles.name}>{product.name}</Text>
+          <Text style={styles.price}>₱{product.price}</Text>
 
-        <View style={styles.stockSection}>
-          <View>
-            <Text style={styles.stockLabel}>Available Stock</Text>
-            <Text style={[
-              styles.stockValue,
-              product.stock === 0 ? styles.outOfStock : product.stock < 10 ? styles.lowStock : styles.inStock
-            ]}>
-              {product.stock} Units
+          <View style={styles.stockSection}>
+            <View>
+              <Text style={styles.stockLabel}>Available Stock</Text>
+              <Text style={[
+                styles.stockValue,
+                product.stock === 0 ? styles.outOfStock : product.stock < 10 ? styles.lowStock : styles.inStock
+              ]}>
+                {product.stock} {product.unit || 'Units'}
+              </Text>
+            </View>
+            <Button title="Update Stock" variant="outline" />
+          </View>
+
+          <View style={styles.detailsBox}>
+            <Text style={styles.detailsTitle}>Product Details</Text>
+            <Text style={styles.detailsText}>
+              Category: {product.category || 'General'}
+              {product.isFastMoving ? '\n✨ Fast Moving Item' : ''}
             </Text>
           </View>
-          <Button title="Update Stock" variant="outline" />
         </View>
-
-        <View style={styles.detailsBox}>
-          <Text style={styles.detailsTitle}>Product Details</Text>
-          <Text style={styles.detailsText}>
-            This is a high-quality product designed for maximum efficiency and durability. 
-            Perfect for professional use in industrial environments.
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+  },
+  largeScreenContainer: {
+    maxWidth: 600,
+    width: '100%',
+    backgroundColor: colors.white,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.slate100,
+  },
   container: {
     flex: 1,
+    width: '100%',
     backgroundColor: colors.background,
   },
   header: {

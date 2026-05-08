@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, Alert, useWindowDimensions } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { Button } from '../components/Button';
@@ -7,6 +7,8 @@ import { X, Camera } from 'lucide-react-native';
 import { productService } from '../services/productService';
 
 export default function AddItem({ navigation }: any) {
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width > 768;
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -51,108 +53,124 @@ export default function AddItem({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Add New Item</Text>
-        <X color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
-      </View>
+    <View style={styles.outerContainer}>
+      <ScrollView style={[styles.container, isLargeScreen && styles.largeScreenContainer]}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Add New Item</Text>
+          <X color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
+        </View>
 
-      <View style={styles.form}>
-        {/* Image Placeholder */}
-        <TouchableOpacity style={styles.imagePicker}>
-          <Camera color={colors.slate500} size={32} />
-          <Text style={styles.imagePickerText}>Add Product Photo</Text>
-        </TouchableOpacity>
+        <View style={styles.form}>
+          {/* Image Placeholder */}
+          <TouchableOpacity style={styles.imagePicker}>
+            <Camera color={colors.slate500} size={32} />
+            <Text style={styles.imagePickerText}>Add Product Photo</Text>
+          </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Product Name *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. Kopiko Black"
-            value={form.name}
-            onChangeText={(v) => setForm({ ...form, name: v })}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Product Name *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Kopiko Black"
+              value={form.name}
+              onChangeText={(v) => setForm({ ...form, name: v })}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>SKU *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. KP-BLK-01"
+              value={form.sku}
+              onChangeText={(v) => setForm({ ...form, sku: v })}
+            />
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
+              <Text style={styles.label}>Price (₱) *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0.00"
+                keyboardType="numeric"
+                value={form.price}
+                onChangeText={(v) => setForm({ ...form, price: v })}
+              />
+            </View>
+            <View style={[styles.inputGroup, { flex: 1, marginLeft: spacing.sm }]}>
+              <Text style={styles.label}>Initial Stock *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="0"
+                keyboardType="numeric"
+                value={form.stock}
+                onChangeText={(v) => setForm({ ...form, stock: v })}
+              />
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
+              <Text style={styles.label}>Unit</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. sachets"
+                value={form.unit}
+                onChangeText={(v) => setForm({ ...form, unit: v })}
+              />
+            </View>
+            <View style={[styles.inputGroup, { flex: 1, marginLeft: spacing.sm }]}>
+              <Text style={styles.label}>Category</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="General"
+                value={form.category}
+                onChangeText={(v) => setForm({ ...form, category: v })}
+              />
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            style={styles.switchRow}
+            onPress={() => setForm({ ...form, isFastMoving: !form.isFastMoving })}
+          >
+            <Text style={styles.label}>Mark as Fast Moving</Text>
+            <View style={[styles.customSwitch, form.isFastMoving && styles.customSwitchActive]}>
+              <View style={[styles.customSwitchThumb, form.isFastMoving && styles.customSwitchThumbActive]} />
+            </View>
+          </TouchableOpacity>
+
+          <Button 
+            title={loading ? "Saving..." : "Save Product"} 
+            style={styles.saveButton} 
+            onPress={handleSave}
+            disabled={loading}
           />
+          {loading && <ActivityIndicator style={{ marginTop: 10 }} color={colors.primary} />}
         </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>SKU *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. KP-BLK-01"
-            value={form.sku}
-            onChangeText={(v) => setForm({ ...form, sku: v })}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
-            <Text style={styles.label}>Price (₱) *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0.00"
-              keyboardType="numeric"
-              value={form.price}
-              onChangeText={(v) => setForm({ ...form, price: v })}
-            />
-          </View>
-          <View style={[styles.inputGroup, { flex: 1, marginLeft: spacing.sm }]}>
-            <Text style={styles.label}>Initial Stock *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0"
-              keyboardType="numeric"
-              value={form.stock}
-              onChangeText={(v) => setForm({ ...form, stock: v })}
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, { flex: 1, marginRight: spacing.sm }]}>
-            <Text style={styles.label}>Unit</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. sachets"
-              value={form.unit}
-              onChangeText={(v) => setForm({ ...form, unit: v })}
-            />
-          </View>
-          <View style={[styles.inputGroup, { flex: 1, marginLeft: spacing.sm }]}>
-            <Text style={styles.label}>Category</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="General"
-              value={form.category}
-              onChangeText={(v) => setForm({ ...form, category: v })}
-            />
-          </View>
-        </View>
-
-        <TouchableOpacity 
-          style={styles.switchRow}
-          onPress={() => setForm({ ...form, isFastMoving: !form.isFastMoving })}
-        >
-          <Text style={styles.label}>Mark as Fast Moving</Text>
-          <View style={[styles.customSwitch, form.isFastMoving && styles.customSwitchActive]}>
-            <View style={[styles.customSwitchThumb, form.isFastMoving && styles.customSwitchThumbActive]} />
-          </View>
-        </TouchableOpacity>
-
-        <Button 
-          title={loading ? "Saving..." : "Save Product"} 
-          style={styles.saveButton} 
-          onPress={handleSave}
-          disabled={loading}
-        />
-        {loading && <ActivityIndicator style={{ marginTop: 10 }} color={colors.primary} />}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+  },
+  largeScreenContainer: {
+    maxWidth: 600,
+    width: '100%',
+    backgroundColor: colors.white,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: colors.slate100,
+  },
   container: {
     flex: 1,
+    width: '100%',
     backgroundColor: colors.background,
   },
   header: {
