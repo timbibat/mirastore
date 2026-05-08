@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions, Image, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { colors } from '../theme/colors';
 import { Card } from '../components/Card';
@@ -142,65 +143,67 @@ export default function SalesTracker({ navigation }: any) {
   }
 
   return (
-    <View style={tw`flex-1 w-full bg-violet-50`}>
-      <View style={tw`pt-6 px-4 pb-4 bg-white border-b border-slate-200`}>
-        <Text style={tw`text-2xl font-extrabold text-violet-600 text-center`}>Sales Tracker</Text>
-      </View>
-
-      <ScrollView style={tw`p-4`}>
-        {/* Period Selector */}
-        <View style={tw`flex-row bg-white rounded-lg p-1 mb-4 border border-slate-200`}>
-          {['Today', 'Weekly', 'Monthly', 'Total'].map((p) => (
-            <TouchableOpacity 
-              key={p} 
-              style={[tw`flex-1 py-2 items-center rounded-md`, period === p && tw`bg-violet-600`]}
-              onPress={() => setPeriod(p as any)}
-            >
-              <Text style={[tw`text-xs font-semibold text-slate-500`, period === p && tw`text-white`]}>{p}</Text>
-            </TouchableOpacity>
-          ))}
+    <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
+      <View style={tw`flex-1 w-full bg-violet-50`}>
+        <View style={tw`pt-4 px-4 pb-4 bg-white border-b border-slate-200`}>
+          <Text style={tw`text-2xl font-black text-slate-900`}>Sales Tracker</Text>
         </View>
 
-        {/* Summary Stats */}
-        <View style={tw`flex-row justify-between mb-4`}>
-          <Card style={[tw`w-[48%] p-4 rounded-xl`, { backgroundColor: colors.primary }]}>
-            <Text style={tw`text-[10px] font-bold text-white opacity-80 tracking-wide`}>{period.toUpperCase()} EARNINGS</Text>
-            <Text style={tw`text-2xl font-extrabold text-white my-1`}>₱{totalEarnings.toLocaleString()}</Text>
-            <View style={tw`flex-row items-center`}>
-              <TrendingUp color={colors.white} size={14} />
-              <Text style={tw`text-[10px] font-semibold text-white ml-1`}>Live Data</Text>
-            </View>
-          </Card>
-          
-          <Card style={tw`w-[48%] p-4 rounded-xl border-slate-200`}>
-            <Text style={tw`text-[10px] font-bold text-slate-500 tracking-wide`}>ORDERS</Text>
-            <Text style={tw`text-2xl font-extrabold text-indigo-950 my-1`}>{totalSalesCount}</Text>
-            <View style={tw`flex-row items-center`}>
-              <Receipt color={colors.primary} size={14} />
-              <Text style={tw`text-[10px] font-semibold text-violet-600 ml-1`}>{period} Count</Text>
-            </View>
-          </Card>
-        </View>
-
-        <View style={tw`flex-row justify-between items-center mb-4`}>
-          <Text style={tw`text-lg font-bold text-indigo-950`}>{period} Transactions</Text>
-        </View>
-
-        {filteredSales.length === 0 ? (
-          <View style={tw`items-center justify-center py-16`}>
-            <Receipt color={colors.slate200} size={64} />
-            <Text style={tw`mt-4 text-base text-slate-500 font-medium`}>No sales for this period.</Text>
+        <ScrollView style={tw`p-4`}>
+          {/* Period Selector */}
+          <View style={tw`flex-row bg-white rounded-lg p-1 mb-4 border border-slate-200 shadow-sm`}>
+            {['Today', 'Weekly', 'Monthly', 'Total'].map((p) => (
+              <TouchableOpacity 
+                key={p} 
+                style={[tw`flex-1 py-2 items-center rounded-md`, period === p && tw`bg-violet-600`]}
+                onPress={() => setPeriod(p as any)}
+              >
+                <Text style={[tw`text-xs font-semibold text-slate-500`, period === p && tw`text-white`]}>{p}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        ) : (
-          <FlatList
-            data={filteredSales}
-            renderItem={renderSaleItem}
-            keyExtractor={item => item.id || Math.random().toString()}
-            scrollEnabled={false}
-            contentContainerStyle={tw`pb-12`}
-          />
-        )}
-      </ScrollView>
-    </View>
+
+          {/* Summary Stats */}
+          <View style={tw`flex-row justify-between mb-4`}>
+            <Card style={[tw`w-[48%] p-4 rounded-2xl`, { backgroundColor: colors.primary }]}>
+              <Text style={tw`text-[10px] font-bold text-white opacity-80 tracking-wide`}>{period.toUpperCase()} EARNINGS</Text>
+              <Text style={tw`text-2xl font-extrabold text-white my-1`}>₱{totalEarnings.toLocaleString()}</Text>
+              <View style={tw`flex-row items-center`}>
+                <TrendingUp color={colors.white} size={14} />
+                <Text style={tw`text-[10px] font-semibold text-white ml-1`}>Live Data</Text>
+              </View>
+            </Card>
+            
+            <Card style={tw`w-[48%] p-4 rounded-2xl border-slate-100 bg-white`}>
+              <Text style={tw`text-[10px] font-bold text-slate-500 tracking-wide`}>ORDERS</Text>
+              <Text style={tw`text-2xl font-extrabold text-indigo-950 my-1`}>{totalSalesCount}</Text>
+              <View style={tw`flex-row items-center`}>
+                <Receipt color={colors.primary} size={14} />
+                <Text style={tw`text-[10px] font-semibold text-violet-600 ml-1`}>{period} Count</Text>
+              </View>
+            </Card>
+          </View>
+
+          <View style={tw`flex-row justify-between items-center mb-4`}>
+            <Text style={tw`text-lg font-bold text-indigo-950`}>{period} Transactions</Text>
+          </View>
+
+          {filteredSales.length === 0 ? (
+            <View style={tw`items-center justify-center py-16`}>
+              <Receipt color={colors.slate200} size={64} />
+              <Text style={tw`mt-4 text-base text-slate-500 font-medium`}>No sales for this period.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredSales}
+              renderItem={renderSaleItem}
+              keyExtractor={item => item.id || Math.random().toString()}
+              scrollEnabled={false}
+              contentContainerStyle={tw`pb-12`}
+            />
+          )}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }

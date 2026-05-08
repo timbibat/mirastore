@@ -64,12 +64,22 @@ export const salesService = {
 
   // Fetch all sales ordered by timestamp
   async getSales(): Promise<Sale[]> {
-    const q = query(collection(db, SALES_COLLECTION), orderBy('timestamp', 'desc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as Sale[];
+    try {
+      const q = query(collection(db, SALES_COLLECTION), orderBy('timestamp', 'desc'));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Sale[];
+    } catch (error: any) {
+      console.error('Error fetching sales:', error);
+      if (error.code === 'permission-denied') {
+        import('react-native').then(({ Alert }) => 
+          Alert.alert('Database Error', 'Access denied. Please check your Firestore Security Rules.')
+        );
+      }
+      return [];
+    }
   },
 
   // Delete a sale and revert product stocks

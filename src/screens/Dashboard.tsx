@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Image, Modal, Dimensions, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useWindowDimensions, Image, Modal, Dimensions, Alert, Platform, StatusBar } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { colors } from '../theme/colors';
 import { Card } from '../components/Card';
@@ -11,6 +12,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function Dashboard({ navigation, onLogout }: any) {
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,17 +149,26 @@ export default function Dashboard({ navigation, onLogout }: any) {
   }
 
   return (
-    <View style={tw`flex-1 w-full bg-white`}>
-      <ScrollView style={tw`flex-1 w-full bg-white`}>
+    <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
+      <ScrollView 
+        style={tw`flex-1 w-full bg-white`}
+        contentContainerStyle={tw`pb-24`}
+      >
         {/* Header */}
-        <View style={tw`pt-6 px-4 pb-4 flex-row items-center justify-between bg-violet-50`}>
-          <Text style={tw`text-xl font-extrabold text-violet-600 text-center flex-1`}>Mira's Sari-Sari Store</Text>
+        <View style={[
+          tw`px-6 pb-6 pt-2 flex-row items-center justify-between bg-white border-b border-slate-50`,
+          { borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }
+        ]}>
+          <View>
+            <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest`}>Mira's Sari-Sari Store</Text>
+            <Text style={tw`text-3xl font-black text-slate-900`}>Dashboard</Text>
+          </View>
           <View style={tw`flex-row items-center`}>
             <TouchableOpacity 
               onPress={() => setLogoutMenuVisible(true)} 
-              style={tw`w-8 h-8 rounded-full bg-slate-200 justify-center items-center`}
+              style={tw`w-12 h-12 rounded-2xl bg-slate-50 justify-center items-center border border-slate-100 shadow-sm`}
             >
-              <User color={colors.slate500} size={20} />
+              <User color={colors.primary} size={24} />
             </TouchableOpacity>
           </View>
         </View>
@@ -217,7 +228,7 @@ export default function Dashboard({ navigation, onLogout }: any) {
           <View style={tw`flex-row flex-wrap justify-between mb-6`}>
             {/* Today's Sales Card */}
             <TouchableOpacity style={tw`w-[48%] mb-4`} onPress={() => navigation.navigate('Sales')}>
-              <Card style={tw`p-4 h-full border-slate-200`}>
+              <Card style={tw`p-4 border-slate-200 flex-1`}>
                 <View style={tw`flex-row justify-between items-center mb-2`}>
                   <Text style={tw`text-xs font-bold text-slate-500 tracking-wider`}>TODAY'S SALES</Text>
                   <MoreVertical color={colors.onSurface} size={20} />
@@ -242,7 +253,7 @@ export default function Dashboard({ navigation, onLogout }: any) {
             </TouchableOpacity>
 
             {/* Store Status Card */}
-            <Card style={tw`p-4 h-full border-slate-200 w-[48%] mb-4`}>
+            <Card style={tw`p-4 border-slate-200 w-[48%] mb-4`}>
               <Text style={tw`text-xs font-bold text-slate-500 tracking-wider mb-2`}>STORE STATUS</Text>
               
               <View style={tw`flex-row justify-between items-center py-1`}>
@@ -280,8 +291,14 @@ export default function Dashboard({ navigation, onLogout }: any) {
             </TouchableOpacity>
           </View>
 
-          {sales.slice(0, 3).map((sale) => (
-            <Card key={sale.id} style={tw`p-4 mb-2 border-slate-100`}>
+          {sales.length === 0 ? (
+            <Card style={tw`p-8 items-center border-slate-50 bg-slate-50/50`}>
+              <Receipt color={colors.slate300} size={48} />
+              <Text style={tw`text-sm font-bold text-slate-400 mt-4`}>No transactions yet today</Text>
+            </Card>
+          ) : (
+            sales.slice(0, 3).map((sale) => (
+              <Card key={sale.id} style={tw`p-4 mb-2 border-slate-100`}>
               <View style={tw`flex-row items-center`}>
                 <View style={tw`w-10 h-10 rounded-full bg-violet-100 justify-center items-center overflow-hidden border border-violet-100`}>
                   {sale.items[0]?.imageUrl ? (
@@ -324,8 +341,9 @@ export default function Dashboard({ navigation, onLogout }: any) {
                   </View>
                 ))}
               </View>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </View>
       </ScrollView>
       
@@ -376,6 +394,6 @@ export default function Dashboard({ navigation, onLogout }: any) {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }

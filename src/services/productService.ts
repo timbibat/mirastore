@@ -20,12 +20,23 @@ const PRODUCTS_COLLECTION = 'products';
 export const productService = {
   // Fetch all products ordered by creation date
   async getProducts(): Promise<Product[]> {
-    const q = query(collection(db, PRODUCTS_COLLECTION), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as Product[];
+    try {
+      const q = query(collection(db, PRODUCTS_COLLECTION), orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Product[];
+    } catch (error: any) {
+      console.error('Error fetching products:', error);
+      // Only show alert if it's a permission issue or network error
+      if (error.code === 'permission-denied') {
+        import('react-native').then(({ Alert }) => 
+          Alert.alert('Database Error', 'Access denied. Please check your Firestore Security Rules.')
+        );
+      }
+      return [];
+    }
   },
 
   // Add new product with optional image
