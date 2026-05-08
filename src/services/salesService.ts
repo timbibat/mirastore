@@ -7,6 +7,7 @@ export interface SaleItem {
   quantity: number;
   pricePerUnit: number;
   totalPrice: number;
+  imageUrl?: string;
 }
 
 export interface Sale {

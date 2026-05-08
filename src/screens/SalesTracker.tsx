@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, FlatList, useWindowDimensions, Image } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { Card } from '../components/Card';
-import { TrendingUp, Receipt, Calendar, ArrowUpRight, ArrowDownRight, Package } from 'lucide-react-native';
+import { TrendingUp, Receipt, Calendar, ArrowUpRight, ArrowDownRight, Package, ChevronDown } from 'lucide-react-native';
 import { salesService, Sale } from '../services/salesService';
 
 export default function SalesTracker({ navigation }: any) {
   const { width } = useWindowDimensions();
-  const isLargeScreen = width > 768;
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<'Today' | 'Weekly' | 'Monthly' | 'Total'>('Today');
 
   const fetchSales = async () => {
     try {
@@ -30,28 +30,49 @@ export default function SalesTracker({ navigation }: any) {
     return unsubscribe;
   }, [navigation]);
 
-  // Calculate metrics
-  const totalEarnings = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
-  const totalSalesCount = sales.length;
-  
-  // Today's Sales (Mock logic for now, using timestamp if possible)
-  const today = new Date().toDateString();
-  const todaySales = sales.filter(s => {
-    const date = s.timestamp?.toDate ? s.timestamp.toDate() : new Date(s.timestamp);
-    return date.toDateString() === today;
+  // Filtering Logic
+  const filteredSales = sales.filter(s => {
+    if (period === 'Total') return true;
+    const saleDate = s.timestamp?.toDate ? s.timestamp.toDate() : new Date(s.timestamp);
+    const now = new Date();
+    
+    if (period === 'Today') {
+      return saleDate.toDateString() === now.toDateString();
+    }
+    if (period === 'Weekly') {
+      const weekAgo = new Date();
+      weekAgo.setDate(now.getDate() - 7);
+      return saleDate >= weekAgo;
+    }
+    if (period === 'Monthly') {
+      return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+    }
+    return true;
   });
-  const todayEarnings = todaySales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+
+  const totalEarnings = filteredSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+  const totalSalesCount = filteredSales.length;
 
   const renderSaleItem = ({ item }: { item: Sale }) => {
     const date = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
     return (
       <Card style={styles.transactionCard}>
         <View style={styles.transactionHeader}>
-          <View style={styles.receiptIconBox}>
-            <Receipt color={colors.primary} size={20} />
+          <View style={styles.transactionIcon}>
+            {item.items[0]?.imageUrl ? (
+              <Image source={{ uri: item.items[0].imageUrl }} style={styles.transactionProductImage} />
+            ) : (
+              <View style={styles.receiptIconBox}>
+                <Receipt color={colors.primary} size={20} />
+              </View>
+            )}
           </View>
           <View style={styles.transactionInfo}>
-            <Text style={styles.transactionTitle}>Order #{item.id?.slice(-6).toUpperCase()}</Text>
+            <Text style={styles.transactionTitle} numberOfLines={1}>
+              {item.items.length > 1 
+                ? `${item.items[0].productName} & ${item.items.length - 1} more`
+                : item.items[0].productName}
+            </Text>
             <Text style={styles.transactionDate}>{date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {date.toLocaleDateString()}</Text>
           </View>
           <Text style={styles.transactionAmount}>₱{item.totalAmount.toFixed(2)}</Text>
@@ -59,7 +80,16 @@ export default function SalesTracker({ navigation }: any) {
         <View style={styles.transactionDetails}>
           {item.items.map((prod, idx) => (
             <View key={idx} style={styles.productRow}>
-              <Text style={styles.productName}>{prod.productName} x {prod.quantity}</Text>
+              <View style={styles.productMainInfo}>
+                <View style={styles.itemImageContainer}>
+                  {prod.imageUrl ? (
+                    <Image source={{ uri: prod.imageUrl }} style={styles.itemThumbnail} />
+                  ) : (
+                    <Package color={colors.slate400} size={14} />
+                  )}
+                </View>
+                <Text style={styles.productName}>{prod.productName} x {prod.quantity}</Text>
+              </View>
               <Text style={styles.productPrice}>₱{prod.totalPrice.toFixed(2)}</Text>
             </View>
           ))}
@@ -83,67 +113,52 @@ export default function SalesTracker({ navigation }: any) {
       </View>
 
       <ScrollView style={styles.content}>
+        {/* Period Selector */}
+        <View style={styles.periodSelector}>
+          {['Today', 'Weekly', 'Monthly', 'Total'].map((p) => (
+            <TouchableOpacity 
+              key={p} 
+              style={[styles.periodButton, period === p && styles.periodButtonActive]}
+              onPress={() => setPeriod(p as any)}
+            >
+              <Text style={[styles.periodButtonText, period === p && styles.periodButtonTextActive]}>{p}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         {/* Summary Stats */}
         <View style={styles.statsRow}>
           <Card style={[styles.statCard, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.statLabel, { color: colors.onPrimaryContainer }]}>TODAY</Text>
-            <Text style={[styles.statValue, { color: colors.white }]}>₱{todayEarnings.toFixed(0)}</Text>
+            <Text style={[styles.statLabel, { color: colors.white, opacity: 0.8 }]}>{period.toUpperCase()} EARNINGS</Text>
+            <Text style={[styles.statValue, { color: colors.white }]}>₱{totalEarnings.toLocaleString()}</Text>
             <View style={styles.trendRow}>
-              <ArrowUpRight color={colors.onPrimaryContainer} size={14} />
-              <Text style={[styles.trendText, { color: colors.onPrimaryContainer }]}>+12% vs yest.</Text>
+              <TrendingUp color={colors.white} size={14} />
+              <Text style={[styles.trendText, { color: colors.white }]}>Live Data</Text>
             </View>
           </Card>
           
           <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>TOTAL EARNINGS</Text>
-            <Text style={[styles.statValue, { color: colors.onSurface }]}>₱{totalEarnings.toFixed(0)}</Text>
+            <Text style={styles.statLabel}>ORDERS</Text>
+            <Text style={[styles.statValue, { color: colors.onSurface }]}>{totalSalesCount}</Text>
             <View style={styles.trendRow}>
-              <TrendingUp color={colors.primary} size={14} />
-              <Text style={[styles.trendText, { color: colors.primary }]}>Live Data</Text>
+              <Receipt color={colors.primary} size={14} />
+              <Text style={[styles.trendText, { color: colors.primary }]}>{period} Count</Text>
             </View>
           </Card>
         </View>
 
-        {/* Secondary Stats */}
-        <View style={styles.secondaryStats}>
-          <View style={styles.secStatBox}>
-            <Package color={colors.slate500} size={20} />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.secStatValue}>{totalSalesCount}</Text>
-              <Text style={styles.secStatLabel}>Total Orders</Text>
-            </View>
-          </View>
-          <View style={styles.secStatDivider} />
-          <View style={styles.secStatBox}>
-            <Calendar color={colors.slate500} size={20} />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.secStatValue}>Weekly</Text>
-              <Text style={styles.secStatLabel}>Report</Text>
-            </View>
-          </View>
-        </View>
-
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Transactions</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAll}>See All</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>{period} Transactions</Text>
         </View>
 
-        {sales.length === 0 ? (
+        {filteredSales.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Receipt color={colors.slate200} size={64} />
-            <Text style={styles.emptyText}>No sales recorded yet.</Text>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('Inventory', { screen: 'InventoryList' })}
-            >
-              <Text style={styles.actionButtonText}>Start Selling</Text>
-            </TouchableOpacity>
+            <Text style={styles.emptyText}>No sales for this period.</Text>
           </View>
         ) : (
           <FlatList
-            data={sales}
+            data={filteredSales}
             renderItem={renderSaleItem}
             keyExtractor={item => item.id || Math.random().toString()}
             scrollEnabled={false}
@@ -205,6 +220,67 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: spacing.md,
+  },
+  periodSelector: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderRadius: spacing.radius,
+    padding: 4,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.slate200,
+  },
+  periodButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: spacing.radius - 4,
+  },
+  periodButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  periodButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.slate500,
+  },
+  periodButtonTextActive: {
+    color: colors.white,
+  },
+  productMainInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  transactionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.slate50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.slate100,
+  },
+  transactionProductImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  itemImageContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: colors.slate50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    overflow: 'hidden',
+  },
+  itemThumbnail: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   statCard: {
     flex: 0.48,

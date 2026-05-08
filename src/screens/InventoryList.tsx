@@ -5,7 +5,7 @@ import { spacing } from '../theme/spacing';
 import { Search, SlidersHorizontal, MoreVertical, Coffee, FlaskConical, Wine, Package, ChevronLeft, ChevronRight, Image as ImageIcon, ShoppingCart, Plus } from 'lucide-react-native';
 import { productService, Product } from '../services/productService';
 import { salesService } from '../services/salesService';
-import { Modal, Alert } from 'react-native';
+import { Modal, Alert, Image } from 'react-native';
 
 export default function InventoryList({ navigation }: any) {
   const { width } = useWindowDimensions();
@@ -72,7 +72,8 @@ export default function InventoryList({ navigation }: any) {
         productName: selectedProduct.name,
         quantity: qty,
         pricePerUnit: selectedProduct.price,
-        totalPrice: selectedProduct.price * qty
+        totalPrice: selectedProduct.price * qty,
+        imageUrl: selectedProduct.imageUrl
       }]);
       
       Alert.alert('Success', `Sold ${qty} ${selectedProduct.name}(s)!`);
@@ -93,7 +94,11 @@ export default function InventoryList({ navigation }: any) {
           onPress={() => navigation.navigate('ProductDetail', { product: item })}
         >
           <View style={styles.iconContainer}>
-            <Package color={colors.primary} size={24} />
+            {item.imageUrl ? (
+              <Image source={{ uri: item.imageUrl }} style={styles.productImageThumbnail} />
+            ) : (
+              <Package color={colors.primary} size={24} />
+            )}
           </View>
           <View style={styles.cardContent}>
             <Text style={styles.skuText}>SKU: {item.sku}</Text>
@@ -385,14 +390,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   iconContainer: {
-    width: 60,
-    height: 60,
+    width: 120,
+    height: 120,
     backgroundColor: colors.background,
     borderRadius: spacing.radius,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.secondaryContainer,
+    overflow: 'hidden',
+  },
+  productImageThumbnail: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   cardContent: {
     flex: 1,
