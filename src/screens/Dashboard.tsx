@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, useWindowD
 import tw from 'twrnc';
 import { colors } from '../theme/colors';
 import { Card } from '../components/Card';
-import { Menu, Bell, User, Calculator, Store, MoreVertical, Receipt, Package, LogOut } from 'lucide-react-native';
+import { Menu, Bell, User, Calculator, Store, MoreVertical, Receipt, Package, LogOut, Trash2 } from 'lucide-react-native';
 import { productService, Product } from '../services/productService';
 import { salesService, Sale } from '../services/salesService';
 
@@ -28,6 +28,36 @@ export default function Dashboard({ navigation, onLogout }: any) {
         [
           { text: "Cancel", style: "cancel" },
           { text: "Logout", onPress: onLogout, style: "destructive" }
+        ]
+      );
+    }
+  };
+
+  const handleDeleteSale = (sale: Sale) => {
+    const confirmDelete = async () => {
+      try {
+        setLoading(true);
+        await salesService.deleteSale(sale);
+        await fetchMetrics(); // Refresh data
+      } catch (error) {
+        console.error('Error deleting sale:', error);
+        Alert.alert('Error', 'Failed to delete transaction.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (confirm(`Delete transaction for ${sale.items[0].productName}? This will restock the items.`)) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        "Delete Transaction",
+        `Are you sure you want to delete this transaction? Items will be returned to stock.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", onPress: confirmDelete, style: "destructive" }
         ]
       );
     }
@@ -254,7 +284,12 @@ export default function Dashboard({ navigation, onLogout }: any) {
                     {sale.timestamp?.toDate ? sale.timestamp.toDate().toLocaleDateString() : 'Just now'}
                   </Text>
                 </View>
-                <Text style={tw`text-sm font-extrabold text-indigo-950`}>₱{sale.totalAmount.toFixed(2)}</Text>
+                <View style={tw`items-end mr-3`}>
+                  <Text style={tw`text-sm font-extrabold text-indigo-950`}>₱{sale.totalAmount.toFixed(2)}</Text>
+                </View>
+                <TouchableOpacity onPress={() => handleDeleteSale(sale)} style={tw`p-2 bg-red-50 rounded-lg`}>
+                  <Trash2 color={colors.error} size={16} />
+                </TouchableOpacity>
               </View>
               <View style={tw`mt-3 pt-3 border-t border-slate-50`}>
                 {sale.items.map((item, idx) => (
