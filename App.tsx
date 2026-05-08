@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LayoutDashboard, Package, TrendingUp } from 'lucide-react-native';
 import { colors } from './src/theme/colors';
+import { authService } from './src/services/authService';
 
 // Screens
 import Dashboard from './src/screens/Dashboard';
@@ -31,35 +32,21 @@ export default function App() {
   const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
-    // Check for persisted auth state
-    const checkAuth = async () => {
-      try {
-        if (typeof localStorage !== 'undefined') {
-          const authValue = localStorage.getItem('mira_store_auth');
-          if (authValue === 'true') {
-            setIsAuthenticated(true);
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load auth state', e);
-      } finally {
-        setIsReady(true);
-      }
-    };
-    checkAuth();
+    // Listen for Firebase Auth state changes
+    const unsubscribe = authService.subscribeToAuthChanges((user) => {
+      setIsAuthenticated(!!user);
+      setIsReady(true);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('mira_store_auth', 'true');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('mira_store_auth');
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -68,7 +55,7 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
-    return <Login onLogin={handleLogin} />;
+    return <Login />;
   }
 
   return (

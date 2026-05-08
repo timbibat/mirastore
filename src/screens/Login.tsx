@@ -1,32 +1,55 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, useWindowDimensions, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, useWindowDimensions, ScrollView, Alert } from 'react-native';
 import { colors } from '../theme/colors';
-import { Lock, Mail, ArrowRight } from 'lucide-react-native';
+import { Lock, Mail, ArrowRight, UserPlus, LogIn } from 'lucide-react-native';
 import tw from 'twrnc';
+import { authService } from '../services/authService';
 
-export default function Login({ onLogin }: { onLogin: () => void }) {
+export default function Login() {
   const { width } = useWindowDimensions();
   const isLargeScreen = width > 768;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleLogin = () => {
+  const handleAuth = async () => {
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
     setLoading(true);
     setError('');
     
-    setTimeout(() => {
-      const adminEmail = process.env.EXPO_PUBLIC_ADMIN_EMAIL || 'mira@store.com';
-      const adminPassword = process.env.EXPO_PUBLIC_ADMIN_PASSWORD || 'admin123';
-      
-      if (email === adminEmail && password === adminPassword) {
-        onLogin();
+    try {
+      if (isSignUp) {
+        await authService.signUp(email, password);
+        Alert.alert('Success', 'Account created successfully!');
+        setIsSignUp(false); // Switch to login after signup
       } else {
-        setError('Invalid credentials. Please try again.');
-        setLoading(false);
+        await authService.signIn(email, password);
+        // No need to call onLogin(), App.tsx listener will handle it
       }
-    }, 1500);
+    } catch (err: any) {
+      console.error('Auth error:', err);
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        errorMessage = 'Invalid email or password.';
+      } else if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered.';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Password should be at least 6 characters.';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,7 +71,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
                 Mira's Sari-Sari Store
               </Text>
               <Text style={tw`text-base text-slate-500 mt-3 font-medium text-center`}>
-                Manage your store with ease
+                {isSignUp ? 'Create your admin account' : 'Manage your store with ease'}
               </Text>
             </View>
 
@@ -79,30 +102,47 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
               </View>
 
               {error ? (
-                <Text style={tw`text-red-500 text-sm mb-4 text-center font-bold bg-red-50 p-3 rounded-xl overflow-hidden`}>
-                  {error}
-                </Text>
+                <View style={tw`mb-4 bg-red-50 p-4 rounded-2xl border border-red-100`}>
+                  <Text style={tw`text-red-600 text-sm text-center font-bold`}>
+                    {error}
+                  </Text>
+                </View>
               ) : null}
 
               <TouchableOpacity 
                 style={[tw`flex-row h-16 rounded-2xl justify-center items-center mt-6 shadow-md`, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
-                onPress={handleLogin}
+                onPress={handleAuth}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
                   <>
-                    <Text style={tw`text-white text-lg font-extrabold mr-2.5`}>Sign In</Text>
-                    <ArrowRight size={20} color="white" />
+                    <Text style={tw`text-white text-lg font-extrabold mr-2.5`}>
+                      {isSignUp ? 'Create Account' : 'Sign In'}
+                    </Text>
+                    {isSignUp ? <UserPlus size={20} color="white" /> : <ArrowRight size={20} color="white" />}
                   </>
                 )}
               </TouchableOpacity>
+
+              {/* Temporarily disabled Sign Up button */}
+              {/* <TouchableOpacity 
+                style={tw`mt-6 items-center`}
+                onPress={() => {
+                  setIsSignUp(!isSignUp);
+                  setError('');
+                }}
+              >
+                <Text style={tw`text-slate-600 font-bold`}>
+                  {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+                </Text>
+              </TouchableOpacity> */}
             </View>
 
             <View style={tw`mt-12 items-center`}>
               <Text style={tw`text-slate-400 text-xs font-bold uppercase tracking-widest`}>
-                Secure Login for Admin Only
+                SECURE LOGIN FOR ADMIN ONLY
               </Text>
             </View>
           </View>
