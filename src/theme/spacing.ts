@@ -5,5 +5,5 @@ export const spacing = {
   md: 24,
   lg: 40,
   xl: 64,
-  radius: 4,
+  radius: 12,
 };

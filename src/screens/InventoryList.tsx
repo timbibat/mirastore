@@ -91,28 +91,23 @@ export default function InventoryList({ navigation }: any) {
     const isLowStock = item.status === 'LOW STOCK';
 
     return (
-      <View style={tw`bg-white rounded-2xl mb-4 p-4 border border-slate-200`}>
+      <View style={tw`bg-white rounded-3xl mb-4 p-5 border border-slate-100 shadow-sm`}>
         <TouchableOpacity 
-          style={tw`flex-row items-start`}
+          style={tw`flex-row items-center`}
           onPress={() => navigation.navigate('ProductDetail', { product: item })}
         >
-          <View style={tw`w-[120px] h-[120px] bg-violet-50 rounded-xl justify-center items-center border border-violet-100 overflow-hidden`}>
+          <View style={tw`w-20 h-20 bg-slate-50 rounded-2xl justify-center items-center border border-slate-100 overflow-hidden shadow-sm`}>
             {item.imageUrl ? (
               <Image source={{ uri: item.imageUrl }} style={tw`w-full h-full`} resizeMode="cover" />
             ) : (
-              <Package color={colors.primary} size={24} />
+              <Package color={colors.primary} size={28} />
             )}
           </View>
           <View style={tw`flex-1 ml-4`}>
-            <Text style={tw`text-lg font-bold text-indigo-950 mt-0.5`}>{item.name}</Text>
-            <View style={tw`flex-row mt-2`}>
-              {item.isFastMoving && (
-                <View style={tw`flex-row items-center px-2 py-1 rounded-full bg-violet-800 mr-1`}>
-                  <Text style={tw`text-white text-[10px] font-bold`}>FAST MOVING</Text>
-                </View>
-              )}
+            <Text style={tw`text-lg font-black text-indigo-950`}>{item.name}</Text>
+            <View style={tw`flex-row items-center mt-1.5`}>
               <View style={[
-                tw`flex-row items-center px-2 py-1 rounded-full`,
+                tw`flex-row items-center px-2 py-1 rounded-lg`,
                 isInStock ? tw`bg-emerald-50` : isLowStock ? tw`bg-amber-50` : tw`bg-red-50`
               ]}>
                 <View style={[
@@ -120,35 +115,46 @@ export default function InventoryList({ navigation }: any) {
                   isInStock ? tw`bg-emerald-500` : isLowStock ? tw`bg-amber-500` : tw`bg-red-500`
                 ]} />
                 <Text style={[
-                  tw`text-[10px] font-bold`,
-                  isInStock ? tw`text-emerald-800` : isLowStock ? tw`text-amber-800` : tw`text-red-800`
+                  tw`text-[10px] font-black uppercase tracking-wider`,
+                  isInStock ? tw`text-emerald-700` : isLowStock ? tw`text-amber-700` : tw`text-red-700`
                 ]}>{item.status}</Text>
               </View>
+              {item.isFastMoving && (
+                <View style={tw`bg-violet-100 px-2 py-1 rounded-lg ml-2`}>
+                  <Text style={tw`text-[10px] font-black text-violet-600 uppercase tracking-wider`}>FAST</Text>
+                </View>
+              )}
             </View>
+          </View>
+          <View style={tw`items-end`}>
+            <Text style={tw`text-base font-black text-violet-600`}>₱{Number(item.price).toFixed(2)}</Text>
+            <Text style={tw`text-[10px] font-bold text-slate-400 mt-0.5`}>Per {item.unit || 'unit'}</Text>
           </View>
         </TouchableOpacity>
 
         <View style={tw`h-[1px] bg-slate-50 my-4`} />
 
         <View style={tw`flex-row justify-between items-center`}>
-          <View>
-            <Text style={tw`text-[11px] text-slate-500 mb-1`}>Stock</Text>
-            <Text style={tw`text-base font-bold text-indigo-950`}>{item.stock} {item.unit}</Text>
-          </View>
           <View style={tw`flex-row items-center`}>
-            <View style={tw`items-end mr-4`}>
-              <Text style={tw`text-[11px] text-slate-500 mb-1`}>Unit Price</Text>
-              <Text style={tw`text-base font-bold text-indigo-950`}>₱{Number(item.price).toFixed(2)}</Text>
+            <View style={tw`w-10 h-10 bg-slate-50 rounded-xl justify-center items-center mr-3 border border-slate-100`}>
+              <Package color={colors.slate400} size={18} />
             </View>
-            <TouchableOpacity 
-              style={[tw`flex-row items-center bg-violet-600 px-4 py-2 rounded-lg`, item.stock === 0 && tw`bg-slate-200`]}
-              onPress={() => handleQuickSell(item)}
-              disabled={item.stock === 0}
-            >
-              <ShoppingCart color={colors.white} size={20} />
-              <Text style={tw`text-white font-bold text-sm ml-1.5`}>Sell</Text>
-            </TouchableOpacity>
+            <View>
+              <Text style={tw`text-[10px] font-bold text-slate-400 uppercase tracking-wider`}>In Stock</Text>
+              <Text style={tw`text-base font-black text-indigo-950`}>{item.stock} {item.unit}</Text>
+            </View>
           </View>
+          <TouchableOpacity 
+            style={[
+              tw`flex-row items-center bg-violet-600 px-6 py-3 rounded-2xl shadow-md`, 
+              item.stock === 0 && tw`bg-slate-200 shadow-none`
+            ]}
+            onPress={() => handleQuickSell(item)}
+            disabled={item.stock === 0}
+          >
+            <ShoppingCart color={colors.white} size={18} strokeWidth={3} />
+            <Text style={tw`text-white font-black text-sm ml-2`}>Sell Item</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -169,22 +175,25 @@ export default function InventoryList({ navigation }: any) {
   return (
     <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
       <View style={tw`flex-1 w-full bg-violet-50`}>
-        <View style={tw`p-4 flex-row items-center bg-white`}>
-          <Text style={tw`text-2xl font-bold text-indigo-950`}>Mira Inventory</Text>
-          <View style={tw`bg-violet-100 px-2 py-1 rounded-full ml-2`}>
-            <Text style={tw`text-xs text-violet-600 font-semibold`}>{products.length} Items</Text>
+        <View style={tw`px-6 pb-6 pt-4 flex-row justify-between items-center bg-white border-b border-slate-100`}>
+          <View>
+            <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest`}>Stock Management</Text>
+            <Text style={tw`text-3xl font-black text-indigo-950`}>Mira's Inventory</Text>
+          </View>
+          <View style={tw`bg-violet-100 px-3 py-1.5 rounded-2xl`}>
+            <Text style={tw`text-xs text-violet-600 font-bold`}>{products.length} Items</Text>
           </View>
         </View>
 
-        <View style={tw`flex-row p-4 bg-white border-b border-slate-50`}>
-          <View style={tw`flex-1 flex-row items-center bg-white px-4 rounded-xl border border-slate-200`}>
-            <Search color={colors.slate200} size={20} style={tw`mr-2`} />
+        <View style={tw`px-4 py-4 bg-white border-b border-slate-50`}>
+          <View style={tw`flex-row items-center bg-slate-50 px-5 rounded-2xl border border-slate-100 h-14`}>
+            <Search color={colors.slate400} size={20} style={tw`mr-3`} />
             <TextInput
-              style={tw`flex-1 py-2 text-base text-indigo-950`}
-              placeholder="Search item..."
+              style={tw`flex-1 h-full text-base font-semibold text-indigo-950`}
+              placeholder="Search items by name..."
               value={search}
               onChangeText={setSearch}
-              placeholderTextColor={colors.slate200}
+              placeholderTextColor={colors.slate400}
             />
           </View>
         </View>
@@ -212,13 +221,13 @@ export default function InventoryList({ navigation }: any) {
 
         <TouchableOpacity 
           style={[
-            tw`absolute w-15 h-15 rounded-full bg-violet-600 justify-center items-center shadow-lg z-10`,
-            { elevation: 8 },
-            isLargeScreen ? tw`right-10 bottom-[100px]` : tw`right-6 bottom-[90px]`
+            tw`absolute w-16 h-16 rounded-2xl bg-violet-600 justify-center items-center shadow-xl z-10`,
+            { elevation: 12 },
+            isLargeScreen ? tw`right-10 bottom-[100px]` : tw`right-6 bottom-[95px]`
           ]}
           onPress={() => navigation.navigate('AddItem')}
         >
-          <Plus color={colors.white} size={32} />
+          <Plus color={colors.white} size={32} strokeWidth={3} />
         </TouchableOpacity>
 
         {/* Sell Modal */}

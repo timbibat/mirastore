@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, TouchableOpacity, ActivityIndicator, Alert, useWindowDimensions, Image, Modal, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import tw from 'twrnc';
 import { colors } from '../theme/colors';
 import { Button } from '../components/Button';
@@ -94,11 +95,20 @@ export default function AddItem({ route, navigation }: any) {
   };
 
   return (
-    <View style={tw`flex-1 w-full bg-violet-50`}>
+    <SafeAreaView style={tw`flex-1 bg-violet-50`} edges={['top']}>
+      <View style={tw`flex-1 w-full bg-violet-50`}>
       <ScrollView style={tw`flex-1 w-full bg-violet-50`}>
-        <View style={tw`p-4 flex-row justify-between items-center bg-white`}>
-          <Text style={tw`text-xl font-bold text-indigo-950`}>{editingProduct ? 'Edit Product' : 'Add New Item'}</Text>
-          <X color={colors.onSurface} size={24} onPress={() => navigation.goBack()} />
+        <View style={tw`px-6 pb-6 pt-4 flex-row justify-between items-center bg-white border-b border-slate-100`}>
+          <View>
+            <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest`}>Inventory Management</Text>
+            <Text style={tw`text-3xl font-black text-indigo-950`}>{editingProduct ? 'Edit Product' : 'Add New Item'}</Text>
+          </View>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={tw`w-12 h-12 rounded-2xl bg-slate-50 justify-center items-center border border-slate-100 shadow-sm`}
+          >
+            <X color={colors.onSurface} size={24} />
+          </TouchableOpacity>
         </View>
 
         <View style={tw`p-4`}>
@@ -117,71 +127,89 @@ export default function AddItem({ route, navigation }: any) {
             )}
           </TouchableOpacity>
 
-          <View style={tw`mb-4`}>
-            <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>Product Name *</Text>
-            <TextInput
-              style={tw`bg-white border border-slate-200 rounded-lg p-3 text-base text-indigo-950`}
-              placeholder="e.g. Kopiko Black"
-              value={form.name}
-              onChangeText={(v) => setForm({ ...form, name: v })}
-            />
-          </View>
-
-          <View style={tw`flex-row mb-4`}>
-            <View style={tw`flex-1 mr-2`}>
-              <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>Price (₱) *</Text>
+          <View style={tw`mb-5`}>
+            <Text style={tw`text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1`}>Product Name *</Text>
+            <View style={tw`flex-row items-center bg-white rounded-2xl border border-slate-200 px-4 h-14`}>
               <TextInput
-                style={tw`bg-white border border-slate-200 rounded-lg p-3 text-base text-indigo-950`}
-                placeholder="0.00"
-                keyboardType="numeric"
-                value={form.price}
-                onChangeText={(v) => setForm({ ...form, price: v })}
-              />
-            </View>
-            <View style={tw`flex-1 ml-2`}>
-              <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>Initial Stock *</Text>
-              <TextInput
-                style={tw`bg-white border border-slate-200 rounded-lg p-3 text-base text-indigo-950`}
-                placeholder="0"
-                keyboardType="numeric"
-                value={form.stock}
-                onChangeText={(v) => setForm({ ...form, stock: v })}
+                style={tw`flex-1 h-full text-base font-semibold text-indigo-950`}
+                placeholder="e.g. Kopiko Black"
+                placeholderTextColor={colors.slate400}
+                value={form.name}
+                onChangeText={(v) => setForm({ ...form, name: v })}
               />
             </View>
           </View>
 
-          <View style={tw`flex-row mb-4`}>
+          <View style={tw`flex-row mb-5`}>
             <View style={tw`flex-1 mr-2`}>
-              <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>Unit</Text>
-              <TextInput
-                style={tw`bg-white border border-slate-200 rounded-lg p-3 text-base text-indigo-950`}
-                placeholder="e.g. sachets"
-                value={form.unit}
-                onChangeText={(v) => setForm({ ...form, unit: v })}
-              />
+              <Text style={tw`text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1`}>Price (₱) *</Text>
+              <View style={tw`flex-row items-center bg-white rounded-2xl border border-slate-200 px-4 h-14`}>
+                <TextInput
+                  style={tw`flex-1 h-full text-base font-semibold text-indigo-950`}
+                  placeholder="0.00"
+                  placeholderTextColor={colors.slate400}
+                  keyboardType="numeric"
+                  value={form.price}
+                  onChangeText={(v) => setForm({ ...form, price: v })}
+                />
+              </View>
             </View>
             <View style={tw`flex-1 ml-2`}>
-              <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>Category</Text>
-              <TextInput
-                style={tw`bg-white border border-slate-200 rounded-lg p-3 text-base text-indigo-950`}
-                placeholder="General"
-                value={form.category}
-                onChangeText={(v) => setForm({ ...form, category: v })}
-              />
+              <Text style={tw`text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1`}>Initial Stock *</Text>
+              <View style={tw`flex-row items-center bg-white rounded-2xl border border-slate-200 px-4 h-14`}>
+                <TextInput
+                  style={tw`flex-1 h-full text-base font-semibold text-indigo-950`}
+                  placeholder="0"
+                  placeholderTextColor={colors.slate400}
+                  keyboardType="numeric"
+                  value={form.stock}
+                  onChangeText={(v) => setForm({ ...form, stock: v })}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={tw`flex-row mb-6`}>
+            <View style={tw`flex-1 mr-2`}>
+              <Text style={tw`text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1`}>Unit</Text>
+              <View style={tw`flex-row items-center bg-white rounded-2xl border border-slate-200 px-4 h-14`}>
+                <TextInput
+                  style={tw`flex-1 h-full text-base font-semibold text-indigo-950`}
+                  placeholder="e.g. sachets"
+                  placeholderTextColor={colors.slate400}
+                  value={form.unit}
+                  onChangeText={(v) => setForm({ ...form, unit: v })}
+                />
+              </View>
+            </View>
+            <View style={tw`flex-1 ml-2`}>
+              <Text style={tw`text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1`}>Category</Text>
+              <View style={tw`flex-row items-center bg-white rounded-2xl border border-slate-200 px-4 h-14`}>
+                <TextInput
+                  style={tw`flex-1 h-full text-base font-semibold text-indigo-950`}
+                  placeholder="General"
+                  placeholderTextColor={colors.slate400}
+                  value={form.category}
+                  onChangeText={(v) => setForm({ ...form, category: v })}
+                />
+              </View>
             </View>
           </View>
 
           <TouchableOpacity 
-            style={tw`flex-row justify-between items-center py-2 mb-4`}
+            style={tw`flex-row justify-between items-center p-4 bg-white rounded-2xl border border-slate-100 mb-6`}
             onPress={() => setForm({ ...form, isFastMoving: !form.isFastMoving })}
           >
-            <Text style={tw`text-sm font-semibold text-indigo-950 mb-1`}>Mark as Fast Moving</Text>
+            <View>
+              <Text style={tw`text-sm font-bold text-indigo-950`}>Fast Moving Item</Text>
+              <Text style={tw`text-xs text-slate-500 mt-0.5`}>Feature this product in dashboard</Text>
+            </View>
             <View style={[
-              tw`w-[50px] h-[28px] rounded-full p-0.5`,
+              tw`w-[50px] h-[28px] rounded-full p-1`,
               form.isFastMoving ? tw`bg-violet-600` : tw`bg-slate-200`
             ]}>
               <View style={[
-                tw`w-6 h-6 rounded-full bg-white`,
+                tw`w-5 h-5 rounded-full bg-white shadow-sm`,
                 form.isFastMoving ? tw`self-end` : tw`self-start`
               ]} />
             </View>
@@ -189,7 +217,7 @@ export default function AddItem({ route, navigation }: any) {
 
           <Button 
             title={loading ? "Saving..." : (editingProduct ? "Update Product" : "Save Product")} 
-            style={tw`mt-6 py-4`} 
+            style={tw`py-5 rounded-2xl shadow-md`} 
             onPress={handleSave}
             disabled={loading}
           />
@@ -231,6 +259,7 @@ export default function AddItem({ route, navigation }: any) {
           </View>
         </View>
       </Modal>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

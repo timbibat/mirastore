@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import * as firebaseAuth from 'firebase/auth';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Your web app's Firebase configuration
@@ -18,9 +19,19 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// Use a dynamic import trick to bypass missing export errors during build/lint
-const { initializeAuth, getReactNativePersistence } = firebaseAuth as any;
+// Check if we are on web or native
+const isWeb = Platform.OS === 'web';
 
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
+let auth: firebaseAuth.Auth;
+
+if (isWeb) {
+  auth = firebaseAuth.getAuth(app);
+} else {
+  // Use a dynamic import trick to bypass missing export errors during build/lint
+  const { initializeAuth, getReactNativePersistence } = firebaseAuth as any;
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage)
+  });
+}
+
+export { auth };

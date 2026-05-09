@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, View, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,6 +7,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LayoutDashboard, Package, TrendingUp } from 'lucide-react-native';
 import { colors } from './src/theme/colors';
 import { authService } from './src/services/authService';
+import tw from 'twrnc';
 
 // Screens
 import Dashboard from './src/screens/Dashboard';
@@ -50,13 +51,9 @@ function MainTabs({ onLogout }: { onLogout: () => void }) {
           backgroundColor: colors.white,
           borderTopWidth: 1,
           borderTopColor: colors.slate100,
-          // Calculate height based on system navigation bar
-          height: 65 + (Platform.OS === 'android' ? insets.bottom : insets.bottom > 0 ? insets.bottom - 10 : 0),
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
-          paddingTop: 10,
-          // Remove rounded corners to fix the grey gap issue on Android
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
+          height: Platform.OS === 'web' ? 70 : 65 + (Platform.OS === 'android' ? insets.bottom : insets.bottom > 0 ? insets.bottom - 10 : 0),
+          paddingBottom: Platform.OS === 'web' ? 0 : insets.bottom > 0 ? insets.bottom : 10,
+          paddingTop: 8,
           elevation: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -4 },
@@ -64,19 +61,35 @@ function MainTabs({ onLogout }: { onLogout: () => void }) {
           shadowRadius: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginBottom: 4,
+          fontSize: 12,
+          fontWeight: '700',
+          marginBottom: Platform.OS === 'web' ? 5 : 4,
+        },
+        tabBarItemStyle: {
+          backgroundColor: 'transparent',
         },
         headerShown: false,
         tabBarHideOnKeyboard: true,
+        tabBarShowLabel: true,
+        tabBarLabelPosition: 'below-icon',
       })}
     >
-      <Tab.Screen name="Dashboard">
+      <Tab.Screen 
+        name="Dashboard" 
+        options={{ tabBarLabel: 'Dashboard' }}
+      >
         {(props) => <Dashboard {...props} onLogout={onLogout} />}
       </Tab.Screen>
-      <Tab.Screen name="Sales" component={SalesTracker} />
-      <Tab.Screen name="Inventory" component={InventoryStack} />
+      <Tab.Screen 
+        name="Sales" 
+        component={SalesTracker} 
+        options={{ tabBarLabel: 'Tracker' }}
+      />
+      <Tab.Screen 
+        name="Inventory" 
+        component={InventoryStack} 
+        options={{ tabBarLabel: 'Inventory' }}
+      />
     </Tab.Navigator>
   );
 }
@@ -92,8 +105,16 @@ export default function App() {
       setIsReady(true);
     });
 
-    return () => unsubscribe();
-  }, []);
+    // Safety timeout: if auth doesn't respond in 3 seconds, show login anyway
+    const timeout = setTimeout(() => {
+      if (!isReady) setIsReady(true);
+    }, 3000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, [isReady]);
 
   const handleLogout = async () => {
     try {
@@ -105,18 +126,25 @@ export default function App() {
   };
 
   if (!isReady) {
-    return null; // Or a loading spinner
-  }
-
-  if (!isAuthenticated) {
-    return <Login />;
+    return (
+      <View style={tw`flex-1 justify-center items-center bg-violet-50`}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={tw`mt-4 text-slate-500 font-bold`}>Initializing Mira Store...</Text>
+      </View>
+    );
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <MainTabs onLogout={handleLogout} />
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <View style={tw`flex-1`}>
+      <SafeAreaProvider>
+        {!isAuthenticated ? (
+          <Login />
+        ) : (
+          <NavigationContainer>
+            <MainTabs onLogout={handleLogout} />
+          </NavigationContainer>
+        )}
+      </SafeAreaProvider>
+    </View>
   );
 }

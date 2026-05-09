@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, useWindowDimensions, ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { Lock, Mail, ArrowRight, UserPlus, LogIn } from 'lucide-react-native';
 import tw from 'twrnc';
@@ -53,7 +54,8 @@ export default function Login() {
   };
 
   return (
-    <View style={tw`flex-1 bg-slate-50`}>
+    <SafeAreaView style={tw`flex-1 bg-slate-50`} edges={['top']}>
+      <View style={tw`flex-1 bg-slate-50`}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={tw`flex-1`}
@@ -64,22 +66,23 @@ export default function Login() {
         >
           <View style={tw`w-full self-center ${isLargeScreen ? 'bg-white p-12 rounded-[40px] shadow-2xl max-w-[500px]' : 'max-w-[420px]'}`}>
             <View style={tw`items-center mb-12`}>
-              <View style={[tw`w-22 h-22 rounded-3xl justify-center items-center mb-8 shadow-lg`, { backgroundColor: colors.primary }]}>
+              <View style={[tw`w-24 h-24 rounded-[32px] justify-center items-center mb-8 shadow-xl`, { backgroundColor: colors.primary }]}>
                 <Text style={tw`text-5xl font-black text-white`}>M</Text>
               </View>
-              <Text style={tw`text-3xl font-black text-slate-900 text-center leading-tight tracking-tighter`}>
-                Mira's Sari-Sari Store
+              <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest mb-2`}>Store Management System</Text>
+              <Text style={tw`text-4xl font-black text-slate-900 text-center leading-tight tracking-tighter`}>
+                Mira Store
               </Text>
-              <Text style={tw`text-base text-slate-500 mt-3 font-medium text-center`}>
-                {isSignUp ? 'Create your admin account' : 'Manage your store with ease'}
+              <Text style={tw`text-base text-slate-500 mt-4 font-medium text-center`}>
+                {isSignUp ? 'Create your admin account' : 'Manage your business with ease'}
               </Text>
             </View>
 
             <View style={tw`w-full`}>
-              <View style={tw`flex-row items-center bg-slate-50 rounded-2xl mb-4 px-6 border border-slate-200 h-16`}>
-                <Mail size={20} color={colors.slate400} style={tw`mr-3.5`} />
+              <View style={tw`bg-white rounded-[24px] border border-slate-100 px-6 h-16 flex-row items-center mb-4 shadow-sm`}>
+                <Mail size={20} color={colors.slate400} style={tw`mr-4`} />
                 <TextInput
-                  style={tw`flex-1 h-full text-slate-900 text-base font-semibold`}
+                  style={tw`flex-1 h-full text-slate-900 text-base font-bold`}
                   placeholder="Email Address"
                   value={email}
                   onChangeText={setEmail}
@@ -88,11 +91,11 @@ export default function Login() {
                   placeholderTextColor={colors.slate400}
                 />
               </View>
-
-              <View style={tw`flex-row items-center bg-slate-50 rounded-2xl mb-4 px-6 border border-slate-200 h-16`}>
-                <Lock size={20} color={colors.slate400} style={tw`mr-3.5`} />
+ 
+              <View style={tw`bg-white rounded-[24px] border border-slate-100 px-6 h-16 flex-row items-center mb-6 shadow-sm`}>
+                <Lock size={20} color={colors.slate400} style={tw`mr-4`} />
                 <TextInput
-                  style={tw`flex-1 h-full text-slate-900 text-base font-semibold`}
+                  style={tw`flex-1 h-full text-slate-900 text-base font-bold`}
                   placeholder="Password"
                   value={password}
                   onChangeText={setPassword}
@@ -110,7 +113,7 @@ export default function Login() {
               ) : null}
 
               <TouchableOpacity 
-                style={[tw`flex-row h-16 rounded-2xl justify-center items-center mt-6 shadow-md`, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
+                style={[tw`flex-row h-16 rounded-[24px] justify-center items-center mt-4 shadow-lg`, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
                 onPress={handleAuth}
                 disabled={loading}
               >
@@ -118,10 +121,10 @@ export default function Login() {
                   <ActivityIndicator color="white" />
                 ) : (
                   <>
-                    <Text style={tw`text-white text-lg font-extrabold mr-2.5`}>
+                    <Text style={tw`text-white text-lg font-black mr-3`}>
                       {isSignUp ? 'Create Account' : 'Sign In'}
                     </Text>
-                    {isSignUp ? <UserPlus size={20} color="white" /> : <ArrowRight size={20} color="white" />}
+                    {isSignUp ? <UserPlus size={20} color="white" strokeWidth={3} /> : <ArrowRight size={20} color="white" strokeWidth={3} />}
                   </>
                 )}
               </TouchableOpacity>
@@ -148,6 +151,7 @@ export default function Login() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

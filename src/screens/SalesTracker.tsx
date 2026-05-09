@@ -145,20 +145,26 @@ export default function SalesTracker({ navigation }: any) {
   return (
     <SafeAreaView style={tw`flex-1 bg-white`} edges={['top']}>
       <View style={tw`flex-1 w-full bg-violet-50`}>
-        <View style={tw`pt-4 px-4 pb-4 bg-white border-b border-slate-200`}>
-          <Text style={tw`text-2xl font-black text-slate-900`}>Sales Tracker</Text>
+        <View style={tw`px-6 pb-6 pt-4 flex-row justify-between items-center bg-white border-b border-slate-100`}>
+          <View>
+            <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest`}>Financial Reports</Text>
+            <Text style={tw`text-3xl font-black text-indigo-950`}>Sales Tracker</Text>
+          </View>
+          <View style={tw`w-12 h-12 rounded-2xl bg-violet-50 justify-center items-center border border-violet-100 shadow-sm`}>
+            <TrendingUp color={colors.primary} size={24} />
+          </View>
         </View>
 
         <ScrollView style={tw`p-4`}>
           {/* Period Selector */}
-          <View style={tw`flex-row bg-white rounded-lg p-1 mb-4 border border-slate-200 shadow-sm`}>
+          <View style={tw`flex-row bg-white rounded-2xl p-1.5 mb-6 border border-slate-100 shadow-sm`}>
             {['Today', 'Weekly', 'Monthly', 'Total'].map((p) => (
               <TouchableOpacity 
                 key={p} 
-                style={[tw`flex-1 py-2 items-center rounded-md`, period === p && tw`bg-violet-600`]}
+                style={[tw`flex-1 py-2.5 items-center rounded-xl`, period === p && tw`bg-violet-600 shadow-sm`]}
                 onPress={() => setPeriod(p as any)}
               >
-                <Text style={[tw`text-xs font-semibold text-slate-500`, period === p && tw`text-white`]}>{p}</Text>
+                <Text style={[tw`text-xs font-bold text-slate-400`, period === p && tw`text-white`]}>{p}</Text>
               </TouchableOpacity>
             ))}
           </View>

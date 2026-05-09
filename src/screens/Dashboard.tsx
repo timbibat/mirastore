@@ -156,19 +156,19 @@ export default function Dashboard({ navigation, onLogout }: any) {
       >
         {/* Header */}
         <View style={[
-          tw`px-6 pb-6 pt-2 flex-row items-center justify-between bg-white border-b border-slate-50`,
-          { borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }
+          tw`px-6 pb-8 pt-4 flex-row items-center justify-between bg-white border-b border-slate-50`,
+          { borderBottomLeftRadius: 40, borderBottomRightRadius: 40 }
         ]}>
           <View>
             <Text style={tw`text-xs font-bold text-slate-400 uppercase tracking-widest`}>Mira's Sari-Sari Store</Text>
-            <Text style={tw`text-3xl font-black text-slate-900`}>Dashboard</Text>
+            <Text style={tw`text-4xl font-black text-indigo-950`}>Dashboard</Text>
           </View>
           <View style={tw`flex-row items-center`}>
             <TouchableOpacity 
               onPress={() => setLogoutMenuVisible(true)} 
-              style={tw`w-12 h-12 rounded-2xl bg-slate-50 justify-center items-center border border-slate-100 shadow-sm`}
+              style={tw`w-14 h-14 rounded-2xl bg-slate-50 justify-center items-center border border-slate-100 shadow-sm`}
             >
-              <User color={colors.primary} size={24} />
+              <User color={colors.primary} size={28} />
             </TouchableOpacity>
           </View>
         </View>
@@ -208,20 +208,20 @@ export default function Dashboard({ navigation, onLogout }: any) {
           </View>
 
           {/* Action Buttons */}
-          <View style={tw`flex-row justify-between mb-6`}>
+          <View style={tw`flex-row justify-between mb-8`}>
             <TouchableOpacity 
-              style={tw`w-[48%] flex-row items-center justify-center py-4 rounded-xl border border-slate-200 bg-white`}
+              style={tw`w-[48%] flex-row items-center justify-center py-5 rounded-2xl border border-slate-100 bg-white shadow-sm`}
               onPress={() => setCalculatorVisible(true)}
             >
               <Calculator color={colors.onSurface} size={20} />
-              <Text style={tw`text-base font-bold text-indigo-950 ml-2`}>Calculator</Text>
+              <Text style={tw`text-base font-bold text-indigo-950 ml-2.5`}>Calculator</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={tw`w-[48%] flex-row items-center justify-center py-4 rounded-xl border border-violet-600 bg-violet-600`}
+              style={tw`w-[48%] flex-row items-center justify-center py-5 rounded-2xl bg-violet-600 shadow-lg`}
               onPress={() => navigation.navigate('Inventory')}
             >
               <Store color={colors.white} size={20} />
-              <Text style={tw`text-base font-bold text-white ml-2`}>New Sale</Text>
+              <Text style={tw`text-base font-bold text-white ml-2.5`}>New Sale</Text>
             </TouchableOpacity>
           </View>
 
@@ -253,34 +253,36 @@ export default function Dashboard({ navigation, onLogout }: any) {
             </TouchableOpacity>
 
             {/* Store Status Card */}
-            <Card style={tw`p-4 border-slate-200 w-[48%] mb-4`}>
-              <Text style={tw`text-xs font-bold text-slate-500 tracking-wider mb-2`}>STORE STATUS</Text>
-              
-              <View style={tw`flex-row justify-between items-center py-1`}>
-                <Text style={tw`text-xs font-semibold text-indigo-950`}>Total Items</Text>
-                <Text style={tw`text-sm font-bold text-indigo-950`}>{totalItems}</Text>
-              </View>
-              
-              <View style={tw`h-[1px] bg-slate-50 my-1`} />
-
-              <View style={tw`flex-row justify-between items-center py-1`}>
-                <View style={tw`flex-row items-center`}>
-                  <View style={tw`w-1.5 h-1.5 rounded-full bg-violet-100 mr-1.5`} />
-                  <Text style={tw`text-xs font-semibold text-indigo-950`}>Fully Stocked</Text>
+            <View style={tw`w-[48%] mb-4`}>
+              <Card style={tw`p-4 border-slate-200 flex-1`}>
+                <Text style={tw`text-xs font-bold text-slate-500 tracking-wider mb-2`}>STORE STATUS</Text>
+                
+                <View style={tw`flex-row justify-between items-center py-1`}>
+                  <Text style={tw`text-xs font-semibold text-indigo-950`}>Total Items</Text>
+                  <Text style={tw`text-sm font-bold text-indigo-950`}>{totalItems}</Text>
                 </View>
-                <Text style={tw`text-sm font-bold text-indigo-950`}>{fullyStocked}</Text>
-              </View>
+                
+                <View style={tw`h-[1px] bg-slate-50 my-1`} />
 
-              <View style={tw`h-[1px] bg-slate-50 my-1`} />
-
-              <View style={tw`flex-row justify-between items-center py-1`}>
-                <View style={tw`flex-row items-center`}>
-                  <View style={tw`w-1.5 h-1.5 rounded-full bg-violet-600 mr-1.5`} />
-                  <Text style={tw`text-xs font-semibold text-violet-600`}>Needs Restock</Text>
+                <View style={tw`flex-row justify-between items-center py-1`}>
+                  <View style={tw`flex-row items-center`}>
+                    <View style={tw`w-1.5 h-1.5 rounded-full bg-violet-100 mr-1.5`} />
+                    <Text style={tw`text-xs font-semibold text-indigo-950`}>Fully Stocked</Text>
+                  </View>
+                  <Text style={tw`text-sm font-bold text-indigo-950`}>{fullyStocked}</Text>
                 </View>
-                <Text style={tw`text-sm font-bold text-violet-600`}>{needsRestock}</Text>
-              </View>
-            </Card>
+
+                <View style={tw`h-[1px] bg-slate-50 my-1`} />
+
+                <View style={tw`flex-row justify-between items-center py-1`}>
+                  <View style={tw`flex-row items-center`}>
+                    <View style={tw`w-1.5 h-1.5 rounded-full bg-violet-600 mr-1.5`} />
+                    <Text style={tw`text-xs font-semibold text-violet-600`}>Needs Restock</Text>
+                  </View>
+                  <Text style={tw`text-sm font-bold text-violet-600`}>{needsRestock}</Text>
+                </View>
+              </Card>
+            </View>
           </View>
 
           {/* Recent Transactions */}
